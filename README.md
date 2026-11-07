@@ -4,8 +4,16 @@ Minimal Nx workspace with a NestJS API, TypeORM migrations, and PostgreSQL 17.
 
 ## Requirements
 
-- Node.js 22.16+ or 24 LTS and npm.
+- Node.js 22.16+ or 24 LTS and npm 11.10.0 or newer.
 - Docker with Docker Compose.
+
+The npm minimum is enforced with `engine-strict` because older clients ignore
+the seven-day `min-release-age` supply-chain policy. Upgrade npm before installing
+workspace dependencies:
+
+```sh
+npm install --global npm@11.10.0
+```
 
 ## Start the API
 
@@ -75,6 +83,7 @@ Use `createZodDto` from `nestjs-zod` for future request DTOs. The global pipe
 validates those DTOs. The global exception filter returns
 `{statusCode,error,message,path,timestamp}` and adds `issues` for validation
 failures. Unexpected server errors do not expose internal messages or stacks.
+Oversized JSON returns 413. Malformed JSON returns 400 without echoing the body.
 
 ## Checks
 
