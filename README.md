@@ -6,7 +6,7 @@ same Zod response contract.
 ## Requirements
 
 - Node.js 24.x (`.nvmrc` pins 24.0.0).
-- npm 11.x (`packageManager` pins 11.3.0).
+- npm 11.21.1 or later in the 11.x line (`packageManager` pins 11.21.1).
 
 Nx 24.0, Angular 21.2, TypeScript 5.9, NestJS 11, and spartan brain 1.9 are
 version-pinned. Angular 21 supports Node 24.0.0; spartan brain 1.9 supports
@@ -16,6 +16,7 @@ Angular/CDK 21–22 and Tailwind 4. The lockfile pins transitive dependencies.
 
 ```bash
 nvm use
+npm install --global npm@11.21.1
 npm ci
 npx nx serve api
 ```
@@ -143,6 +144,8 @@ source files. GitHub Actions runs `npm ci` and `npm run check` for pushes and PR
 
 `npm audit --omit=dev` checks runtime dependencies. A scoped override upgrades
 Nest's Multer dependency from 2.4.0 to the security-fixed 2.5.0.
+The npm configuration requires a seven-day release age for dependency resolution.
+The pinned npm version supports this policy; older npm versions do not.
 The full audit still reports transitive development-tool advisories in
 `glob`, `minimatch`, and `deepmerge`. No forced major-version overrides are applied
 to those tools. Review `npm audit` when upgrading Nx and the lint toolchain.
