@@ -6,6 +6,7 @@ import { Test } from '@nestjs/testing';
 import { config } from 'dotenv';
 import request from 'supertest';
 import { Column, DataSource, Entity } from 'typeorm';
+import { ApiExpressAdapter } from '../src/common/api-express.adapter';
 import { validateEnvironment } from '../src/config/environment';
 import { databaseOptions } from '../src/database/database-options';
 import { BaseEntity } from '../src/database/entities/base.entity';
@@ -121,7 +122,9 @@ describe('PostgreSQL foundation', () => {
     const module = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
-    app = module.createNestApplication({ logger: false });
+    app = module.createNestApplication(new ApiExpressAdapter(), {
+      logger: false,
+    });
     app.setGlobalPrefix('api');
     await app.init();
     await request(app.getHttpServer())

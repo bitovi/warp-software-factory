@@ -10,10 +10,12 @@ import {
   Post,
 } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
+import { NextFunction, Request, Response } from 'express';
 import { createZodDto } from 'nestjs-zod';
 import request from 'supertest';
 import { DataSource } from 'typeorm';
 import { z } from 'zod';
+import { ApiExpressAdapter } from '../src/common/api-express.adapter';
 
 class InputDto extends createZodDto(
   z.object({ count: z.number().int().min(1) }),
@@ -33,16 +35,17 @@ class ValidationController {
 
   @Get('unexpected')
   unexpected(): never {
-    throw new Error('private database details');
+    throw Object.assign(new Error('private database details'), {
+      status: 413,
+      statusCode: 413,
+      expose: true,
+    });
   }
 }
 
 describe('global HTTP behavior', () => {
   let app: INestApplication;
-  const query = mock.fn(async (sql: string) => {
-    assert.equal(sql, 'SELECT 1');
-    return [{ result: 1 }];
-  });
+  const query = mock.fn(async () => [{ result: 1 }]);
 
   before(async () => {
     Object.assign(process.env, {
@@ -59,7 +62,22 @@ describe('global HTTP behavior', () => {
       .overrideProvider(DataSource)
       .useValue({ query, isInitialized: false })
       .compile();
-    app = module.createNestApplication({ logger: false });
+    app = module.createNestApplication(new ApiExpressAdapter(), {
+      logger: false,
+    });
+    app.use(
+      '/external-error',
+      (_request: Request, _response: Response, next: NextFunction) => {
+        next(
+          Object.assign(new Error('private middleware details'), {
+            status: 413,
+            statusCode: 413,
+            expose: true,
+            type: 'unrecognized',
+          }),
+        );
+      },
+    );
     app.setGlobalPrefix('api');
     await app.init();
   });
@@ -107,6 +125,42 @@ describe('global HTTP behavior', () => {
     assert.equal(invalid.body.error, 'Bad Request');
   });
 
+  it('preserves the payload limit status without exposing parser details', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/api/validation')
+      .send({ count: 1, value: 'private-input'.repeat(10000) })
+      .expect(413);
+    assert.equal(response.body.statusCode, 413);
+    assert.equal(response.body.error, 'Payload Too Large');
+    assert.equal(response.body.message, 'Request body too large');
+    assert.equal(response.body.path, '/api/validation');
+    assert.ok(Number.isFinite(Date.parse(response.body.timestamp)));
+    assert.deepEqual(Object.keys(response.body).sort(), [
+      'error',
+      'message',
+      'path',
+      'statusCode',
+      'timestamp',
+    ]);
+  });
+
+  it('returns a redacted bad request for malformed JSON', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/api/validation')
+      .set('Content-Type', 'application/json')
+      .send('private-input')
+      .expect(400);
+    assert.equal(response.body.statusCode, 400);
+    assert.equal(response.body.error, 'Bad Request');
+    assert.equal(response.body.message, 'Malformed JSON');
+    assert.equal(response.body.path, '/api/validation');
+    assert.ok(Number.isFinite(Date.parse(response.body.timestamp)));
+    assert.doesNotMatch(
+      JSON.stringify(response.body),
+      /private-input|stack|body/,
+    );
+  });
+
   it('redacts unexpected failures', async () => {
     const response = await request(app.getHttpServer())
       .get('/api/validation/unexpected')
@@ -116,6 +170,18 @@ describe('global HTTP behavior', () => {
     assert.doesNotMatch(
       JSON.stringify(response.body),
       /private database|stack/,
+    );
+  });
+
+  it('keeps unrecognized external middleware errors internal', async () => {
+    const response = await request(app.getHttpServer())
+      .get('/external-error')
+      .expect(500);
+    assert.equal(response.body.statusCode, 500);
+    assert.equal(response.body.message, 'Internal server error');
+    assert.doesNotMatch(
+      JSON.stringify(response.body),
+      /private middleware|stack/,
     );
   });
 
