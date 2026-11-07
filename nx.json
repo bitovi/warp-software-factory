@@ -1,0 +1,44 @@
+{
+  "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "defaultBase": "main",
+  "targetDefaults": {
+    "build": {
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/src/**/*",
+        "{projectRoot}/tsconfig*.json",
+        "{workspaceRoot}/tsconfig.base.json",
+        "{workspaceRoot}/package-lock.json"
+      ],
+      "outputs": ["{workspaceRoot}/dist/apps/api"]
+    },
+    "test": {
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*",
+        "{workspaceRoot}/tsconfig.base.json",
+        "{workspaceRoot}/package-lock.json"
+      ]
+    },
+    "lint": {
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*",
+        "{workspaceRoot}/eslint.config.mjs",
+        "{workspaceRoot}/package-lock.json"
+      ]
+    },
+    "typecheck": {
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*",
+        "{workspaceRoot}/tsconfig.base.json",
+        "{workspaceRoot}/package-lock.json"
+      ]
+    }
+  },
+  "analytics": false,
+  "tui": {
+    "enabled": false
+  }
+}
