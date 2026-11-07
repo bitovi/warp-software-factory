@@ -1,0 +1,11 @@
+{
+  "name": "api-core",
+  "projectType": "library",
+  "sourceRoot": "libs/api/core/src",
+  "tags": ["scope:api", "type:util"],
+  "targets": {
+    "typecheck": {
+      "command": "tsc -p libs/api/core/tsconfig.lib.json --noEmit"
+    }
+  }
+}

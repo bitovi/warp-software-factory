@@ -1,0 +1,11 @@
+{
+  "name": "web-ui",
+  "projectType": "library",
+  "sourceRoot": "libs/web/ui/src",
+  "tags": ["scope:web", "type:ui"],
+  "targets": {
+    "typecheck": {
+      "command": "ngc -p libs/web/ui/tsconfig.lib.json --noEmit"
+    }
+  }
+}

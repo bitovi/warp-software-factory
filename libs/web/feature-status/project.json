@@ -1,0 +1,11 @@
+{
+  "name": "web-feature-status",
+  "projectType": "library",
+  "sourceRoot": "libs/web/feature-status/src",
+  "tags": ["scope:web", "type:feature"],
+  "targets": {
+    "typecheck": {
+      "command": "ngc -p libs/web/feature-status/tsconfig.lib.json --noEmit"
+    }
+  }
+}
