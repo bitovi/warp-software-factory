@@ -1,0 +1,25 @@
+@layer theme, base, components, utilities;
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/preflight.css' layer(base);
+@import 'tailwindcss/utilities.css';
+@import '@spartan-ng/brain/hlm-tailwind-preset.css';
+@source '../../../libs/web';
+
+:root {
+  color-scheme: light;
+  --font-sans: system-ui, sans-serif;
+  --radius: 0.625rem;
+  --background: oklch(0.98 0.005 250);
+  --foreground: oklch(0.22 0.025 250);
+  --primary: oklch(0.43 0.13 255);
+  --primary-foreground: oklch(0.99 0 0);
+  --ring: oklch(0.6 0.14 255);
+  --border: oklch(0.9 0.01 250);
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: system-ui, sans-serif;
+}

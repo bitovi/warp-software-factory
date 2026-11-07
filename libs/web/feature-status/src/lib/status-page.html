@@ -1,0 +1,47 @@
+<main class="mx-auto max-w-3xl px-6 py-16 sm:py-24">
+  <p class="mb-3 text-sm font-semibold tracking-widest text-primary uppercase">
+    Warp Software Factory
+  </p>
+  <h1 class="mb-5 text-4xl font-semibold tracking-tight sm:text-5xl">
+    A foundation for your next feature.
+  </h1>
+  <p class="mb-10 max-w-xl text-lg leading-relaxed text-slate-600">
+    Angular and NestJS, connected through a shared, validated contract. Small
+    libraries. Clear boundaries.
+  </p>
+  <section
+    aria-labelledby="status-heading"
+    class="rounded-xl border border-border bg-white p-6 shadow-sm"
+  >
+    <h2 id="status-heading" class="text-xl font-semibold">Workspace status</h2>
+    <p class="mt-2 mb-6 text-slate-600">
+      Check the NestJS API through the Angular development proxy.
+    </p>
+    <div class="flex flex-wrap items-center gap-4">
+      <button
+        hlmBtn
+        type="button"
+        [attr.aria-disabled]="loading()"
+        [attr.aria-busy]="loading()"
+        (click)="checkApi()"
+      >
+        {{ loading() ? 'Checking…' : 'Check API connection' }}
+      </button>
+      <p role="status" class="text-sm text-slate-600">{{ status() }}</p>
+    </div>
+  </section>
+  <dl class="mt-8 grid gap-6 text-sm sm:grid-cols-3">
+    <div>
+      <dt class="font-semibold">Web</dt>
+      <dd class="mt-1 text-slate-600">Standalone Angular · spartan/ui</dd>
+    </div>
+    <div>
+      <dt class="font-semibold">API</dt>
+      <dd class="mt-1 text-slate-600">NestJS · feature modules</dd>
+    </div>
+    <div>
+      <dt class="font-semibold">Shared</dt>
+      <dd class="mt-1 text-slate-600">Zod schemas · inferred types</dd>
+    </div>
+  </dl>
+</main>

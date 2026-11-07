@@ -1,0 +1,14 @@
+{
+  "name": "web-data-access-status",
+  "projectType": "library",
+  "sourceRoot": "libs/web/data-access-status/src",
+  "tags": ["scope:web", "type:data-access"],
+  "targets": {
+    "test": {
+      "command": "tsx --tsconfig tsconfig.base.json --test libs/web/data-access-status/src/lib/status-client.spec.ts"
+    },
+    "typecheck": {
+      "command": "ngc -p libs/web/data-access-status/tsconfig.lib.json --noEmit"
+    }
+  }
+}
