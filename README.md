@@ -5,18 +5,21 @@ same Zod response contract.
 
 ## Requirements
 
-- Node.js 24.x (`.nvmrc` pins 24.0.0).
-- npm 11.21.1 or later in the 11.x line (`packageManager` pins 11.21.1).
+- Node.js 24.22.2 or later in the 24.x line (`.nvmrc` pins 24.22.2).
+- npm 11.19.1 or later in the 11.x line (`packageManager` pins 11.19.1).
+
+The official Node.js 24.22.2 distribution includes npm 11.19.1. Selecting this
+runtime satisfies both requirements; no global npm upgrade is required.
 
 Nx 24.0, Angular 21.2, TypeScript 5.9, NestJS 11, and spartan brain 1.9 are
-version-pinned. Angular 21 supports Node 24.0.0; spartan brain 1.9 supports
+version-pinned. Angular 21 supports Node 24.x; spartan brain 1.9 supports
 Angular/CDK 21–22 and Tailwind 4. The lockfile pins transitive dependencies.
 
 ## Start
 
 ```bash
+nvm install
 nvm use
-npm install --global npm@11.21.1
 npm ci
 npx nx serve api
 ```
@@ -26,6 +29,21 @@ In another terminal:
 ```bash
 npx nx serve web
 ```
+
+If your Node distribution or shell provides an older npm, run the pinned version
+from the user cache instead. This needs no administrator access or global install.
+Keep the prefix when running npm commands:
+
+```bash
+npx --yes npm@11.19.1 ci
+npx --yes npm@11.19.1 run check
+npx --yes npm@11.19.1 exec -- nx serve api
+```
+
+The official pinned Node distribution also includes Corepack. `corepack enable`
+does not create npm shims by default, and `corepack install` only caches the
+configured package manager. These commands do not change plain `npm`. To use
+Corepack explicitly, run `corepack npm ci` or `corepack npm run check`.
 
 Open http://localhost:4200 and select **Check API connection**. The spartan button
 calls `/api/status` through the development proxy to http://localhost:3000.
@@ -139,13 +157,15 @@ npm run build
 
 Outputs go to `dist/apps/web/browser` and `dist/apps/api`. `npm run format` formats
 source files. GitHub Actions runs `npm ci` and `npm run check` for pushes and PRs.
+CI uses the npm bundled with the pinned Node release, without a global upgrade.
 
 ## Dependency security
 
 `npm audit --omit=dev` checks runtime dependencies. A scoped override upgrades
 Nest's Multer dependency from 2.4.0 to the security-fixed 2.5.0.
 The npm configuration requires a seven-day release age for dependency resolution.
-The pinned npm version supports this policy; older npm versions do not.
+Bundled npm 11.19.1 enforces this policy; the engine floor excludes older versions
+that have not been validated for this workspace.
 The full audit still reports transitive development-tool advisories in
 `glob`, `minimatch`, and `deepmerge`. No forced major-version overrides are applied
 to those tools. Review `npm audit` when upgrading Nx and the lint toolchain.
