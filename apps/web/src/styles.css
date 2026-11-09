@@ -3,6 +3,7 @@
 @import 'tailwindcss/preflight.css' layer(base);
 @import 'tailwindcss/utilities.css';
 @import '@spartan-ng/brain/hlm-tailwind-preset.css';
+@import '@angular/cdk/overlay-prebuilt.css';
 @source '../../../libs/web';
 
 :root {
@@ -15,6 +16,10 @@
   --primary-foreground: oklch(0.99 0 0);
   --ring: oklch(0.6 0.14 255);
   --border: oklch(0.9 0.01 250);
+}
+
+.time-entry-backdrop {
+  background: rgb(17 34 51 / 45%);
 }
 
 body {

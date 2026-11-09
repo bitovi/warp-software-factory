@@ -1,0 +1,223 @@
+<main class="timesheet-shell">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Workspace / Time tracking</p>
+      <h1>Your timesheet</h1>
+      <p class="subheading">
+        A little less admin. A clear record of your week.
+      </p>
+    </div>
+    <span class="demo-badge">Development demo</span>
+  </header>
+  <aside class="demo-notice" aria-label="Demo limitations">
+    <strong>Local demo · not connected to a timesheet API.</strong>
+    Entries stay in memory and reset on reload. Calendar and grid below are
+    entry-point demos, not complete views.
+    @if (store.context(); as context) {
+      <span
+        >Development rules: round up {{ context.rules.roundingMinutes }}m ·
+        {{ formatMinutes(context.rules.maxMinutesPerDay) }}/day ·
+        {{
+          context.rules.requireDescription
+            ? 'description required'
+            : 'description optional'
+        }}
+        · locked before {{ context.rules.lockedBefore ?? 'no cutoff' }}.</span
+      >
+    }
+  </aside>
+  <section class="week-toolbar" aria-label="Timesheet controls">
+    <div class="week-navigation">
+      <button
+        class="icon-button"
+        type="button"
+        aria-label="Previous week"
+        (click)="moveWeek(-1)"
+      >
+        ←
+      </button>
+      <div>
+        <span class="eyebrow">Week of</span>
+        <h2>{{ store.range().from }}</h2>
+      </div>
+      <button
+        class="icon-button"
+        type="button"
+        aria-label="Next week"
+        (click)="moveWeek(1)"
+      >
+        →
+      </button>
+    </div>
+    <div class="filter-fields">
+      <label for="filter-project"
+        >Project
+        <select
+          id="filter-project"
+          [ngModel]="store.filters().projectId"
+          (ngModelChange)="filter('projectId', $event)"
+        >
+          <option value="">All projects</option>
+          @for (project of store.context()?.projects; track project.id) {
+            @if (project.active && project.assigned) {
+              <option [value]="project.id">{{ project.name }}</option>
+            }
+          }
+        </select>
+      </label>
+      <label for="filter-billable"
+        >Billing
+        <select
+          id="filter-billable"
+          [ngModel]="store.filters().billable"
+          (ngModelChange)="filter('billable', $event)"
+        >
+          <option value="all">All time</option>
+          <option value="billable">Billable</option>
+          <option value="non-billable">Non-billable</option>
+        </select>
+      </label>
+    </div>
+    <div class="week-total">
+      <span>Filtered week total</span
+      ><strong>{{ formatMinutes(store.totalMinutes()) }}</strong>
+    </div>
+  </section>
+  @if (store.loading()) {
+    <p role="status" class="hint">Loading timesheet…</p>
+  }
+  @if (store.error()) {
+    <p role="alert" class="field-error">
+      {{ store.error() }}
+      <button type="button" (click)="store.load()">Retry</button>
+    </p>
+  }
+  <section class="view-card" aria-labelledby="calendar-title">
+    <header class="section-header">
+      <div>
+        <h2 id="calendar-title">
+          Calendar entry point <span class="section-tag">Demo</span>
+        </h2>
+        <p>Select a day to add time with the shared form.</p>
+      </div>
+    </header>
+    <div class="calendar-days">
+      @for (day of days(); track day; let index = $index) {
+        <button
+          type="button"
+          class="day-card"
+          [disabled]="!store.context() || store.loading()"
+          (click)="open(day)"
+          [attr.aria-label]="'Add time for ' + day + ' from calendar'"
+        >
+          <span>{{
+            ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][index]
+          }}</span>
+          <strong>{{ day.slice(8) }}</strong>
+          <span class="day-total">{{
+            formatMinutes(store.totalsPerDay()[day] ?? 0)
+          }}</span>
+          <span class="add-day">+ Add time</span>
+        </button>
+      }
+    </div>
+  </section>
+  <section class="view-card" aria-labelledby="grid-title">
+    <header class="section-header">
+      <div>
+        <h2 id="grid-title">
+          Grid entry point <span class="section-tag">Demo</span>
+        </h2>
+        <p>The same entries. The same form to edit them.</p>
+      </div>
+      <button
+        hlmBtn
+        type="button"
+        [disabled]="!store.context() || store.loading()"
+        (click)="open(store.range().from)"
+      >
+        + Add from grid
+      </button>
+    </header>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Project / service</th>
+            <th>Description</th>
+            <th>Duration</th>
+            <th>Billing</th>
+            <th><span class="sr-only">Actions</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (entry of store.entries(); track entry.id) {
+            <tr>
+              <td>{{ entry.date }}</td>
+              <td>
+                <strong>{{ projectName(entry.projectId) }}</strong
+                ><span class="table-detail">{{
+                  serviceName(entry.serviceId)
+                }}</span>
+              </td>
+              <td class="entry-description">{{ entry.description }}</td>
+              <td class="duration-cell">{{ formatMinutes(entry.minutes) }}</td>
+              <td>
+                <span class="billing-badge">{{
+                  entry.billable ? 'Billable' : 'Non-billable'
+                }}</span>
+              </td>
+              <td class="actions">
+                @if (entry.approved) {
+                  <span class="hint">Approved</span>
+                } @else if (locked(entry)) {
+                  <span class="hint">Locked / saving</span>
+                }
+                <button
+                  type="button"
+                  class="text-button"
+                  [disabled]="locked(entry)"
+                  [attr.aria-label]="
+                    'Edit entry for ' + entry.date + ' from grid'
+                  "
+                  (click)="open(entry.date, entry)"
+                >
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  class="text-button delete-button"
+                  [disabled]="locked(entry)"
+                  [attr.aria-label]="'Delete entry for ' + entry.date"
+                  (click)="remove(entry)"
+                >
+                  Delete
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="empty-state">
+                <strong>No time entries in this selection.</strong
+                ><span
+                  >Start with a day above, or add an entry from the grid.</span
+                >
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    @if (deleteError()) {
+      <p role="alert" class="field-error">{{ deleteError() }}</p>
+    }
+    <footer class="grid-footer">
+      <span
+        >{{ store.entries().length }}
+        {{ store.entries().length === 1 ? 'entry' : 'entries' }} in this
+        selection</span
+      ><strong>{{ formatMinutes(store.totalMinutes()) }} total</strong>
+    </footer>
+  </section>
+</main>

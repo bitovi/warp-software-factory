@@ -1,0 +1,14 @@
+{
+  "name": "web-feature-timesheet",
+  "projectType": "library",
+  "sourceRoot": "libs/web/feature-timesheet/src",
+  "tags": ["scope:web", "type:feature"],
+  "targets": {
+    "test": {
+      "command": "tsx --tsconfig tsconfig.base.json --test libs/web/feature-timesheet/src/lib/*.spec.ts"
+    },
+    "typecheck": {
+      "command": "ngc -p libs/web/feature-timesheet/tsconfig.lib.json --noEmit"
+    }
+  }
+}
