@@ -1,0 +1,139 @@
+<dialog #dialog aria-labelledby="form-title" (cancel)="dismissed.emit()">
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <header>
+      <div>
+        <p class="eyebrow">PROJECT DETAILS</p>
+        <h2 id="form-title">
+          {{ project() ? 'Edit project' : 'Create a project' }}
+        </h2>
+        <p>Set the foundation. Bring your team in next.</p>
+      </div>
+      <button
+        class="close"
+        type="button"
+        aria-label="Close project form"
+        (click)="dismissed.emit()"
+      >
+        ×
+      </button>
+    </header>
+    <div class="fields">
+      <label class="wide"
+        >Project name <span>*</span>
+        <input
+          autofocus
+          formControlName="name"
+          placeholder="e.g. Customer portal"
+          maxlength="100"
+          aria-describedby="name-hint"
+        />
+        <small
+          id="name-hint"
+          [class.invalid]="
+            form.controls.name.touched && form.controls.name.invalid
+          "
+          >Required · up to 100 characters</small
+        >
+      </label>
+      <label
+        >Project code <span>*</span>
+        <input
+          formControlName="code"
+          placeholder="e.g. ACM-006"
+          maxlength="12"
+          aria-describedby="code-hint"
+        />
+        <small
+          id="code-hint"
+          [class.invalid]="
+            form.controls.code.touched && form.controls.code.invalid
+          "
+          >2–12 letters, numbers or hyphens</small
+        >
+      </label>
+      <label
+        >Client
+        <select formControlName="clientId">
+          <option value="">No client / internal</option>
+          @for (client of clients(); track client.id) {
+            <option [value]="client.id">{{ client.name }}</option>
+          }
+        </select>
+      </label>
+      <label
+        >Start date <input type="date" formControlName="startDate"
+      /></label>
+      <label
+        >End date
+        <input
+          type="date"
+          formControlName="endDate"
+          [min]="form.controls.startDate.value"
+      /></label>
+      @if (form.hasError('dateOrder') && form.touched) {
+        <p class="error wide" role="alert">
+          End date must be on or after the start date.
+        </p>
+      }
+      <label
+        >Project color <input type="color" formControlName="color"
+      /></label>
+      <label
+        >Budget (hours)
+        <input
+          type="number"
+          formControlName="budget"
+          min="0.01"
+          max="1000000"
+          step="0.01"
+          placeholder="No budget limit"
+        />
+        <small
+          [class.invalid]="
+            form.controls.budget.touched && form.controls.budget.invalid
+          "
+          >Optional · greater than 0</small
+        >
+      </label>
+      <label class="check wide"
+        ><input type="checkbox" formControlName="billable" /> This is a billable
+        project</label
+      >
+      <label class="wide"
+        >Hourly rate (USD)
+        <input
+          type="number"
+          formControlName="rate"
+          min="0"
+          max="1000000"
+          step="0.01"
+          aria-describedby="rate-hint"
+        />
+        <small
+          id="rate-hint"
+          [class.invalid]="
+            form.controls.rate.touched && form.controls.rate.invalid
+          "
+          >0–1,000,000 USD · used only for billable projects</small
+        >
+      </label>
+      @if (form.invalid && form.touched) {
+        <p class="error wide" role="alert">
+          Check the required fields, numeric limits and date range.
+        </p>
+      }
+      @if (error()) {
+        <p class="error wide" role="alert">{{ error() }}</p>
+      }
+    </div>
+    <footer>
+      <span>* Required fields</span>
+      <button type="button" class="secondary" (click)="dismissed.emit()">
+        Cancel
+      </button>
+      <button hlmBtn type="submit">
+        {{ project() ? 'Save changes' : 'Create project' }}
+      </button>
+    </footer>
+  </form>
+</dialog>

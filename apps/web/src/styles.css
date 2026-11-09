@@ -11,9 +11,9 @@
   --radius: 0.625rem;
   --background: oklch(0.98 0.005 250);
   --foreground: oklch(0.22 0.025 250);
-  --primary: oklch(0.43 0.13 255);
+  --primary: oklch(0.46 0.085 176);
   --primary-foreground: oklch(0.99 0 0);
-  --ring: oklch(0.6 0.14 255);
+  --ring: oklch(0.6 0.1 176);
   --border: oklch(0.9 0.01 250);
 }
 

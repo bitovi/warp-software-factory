@@ -45,7 +45,8 @@ does not create npm shims by default, and `corepack install` only caches the
 configured package manager. These commands do not change plain `npm`. To use
 Corepack explicitly, run `corepack npm ci` or `corepack npm run check`.
 
-Open http://localhost:4200 and select **Check API connection**. The spartan button
+Open http://localhost:4200 for the Projects demo. Select **API connection** in
+the navigation, then **Check API connection**. The spartan button
 calls `/api/status` through the development proxy to http://localhost:3000.
 A successful, schema-validated response shows `api · ok`. The page also handles
 an unavailable API or an invalid response. `PORT` overrides the API port; update
@@ -60,6 +61,35 @@ The API exposes `GET http://localhost:3000/api/status`:
 These are development servers. Production hosting, a production `/api` reverse
 proxy, authentication, and persistence are not configured.
 
+## Projects demo
+
+Projects runs without the API. The visible **Demo viewer** control switches
+between Emily (manager) and Mia, Jordan or Alex (read-only employees).
+All project changes live in memory and reset on reload. These controls simulate
+permissions; they are not authentication or server authorization.
+
+- Managers can create and edit projects, assign members and services, change
+  status, and archive or restore projects. Archive before permanent deletion;
+  deletion requires confirmation and removes the project's demo time entries.
+- Employees see only assigned projects, including when opening a detail URL.
+  They cannot mutate projects through either the UI or the demo adapter.
+- Filters combine client, status, name/code search and **My projects**.
+  **Not archived** is the default. Select **Archived** to find archived work.
+- Overview shows project-wide hours since local Monday and the start of the
+  local month, total recorded hours, and an hours budget. Rates use USD.
+  Members and Services assignments apply immediately. Time entries are read-only.
+- **Timesheet demo** previews project selection only. Its shared eligibility
+  selector includes only active, unarchived projects assigned to the current
+  identity. New projects initially include their creating manager.
+
+`web-feature-projects` uses the `PROJECTS_REPOSITORY` injection token and the
+`ProjectsRepository` interface from `@wsf/web/data-access-projects`.
+`DemoProjectsRepository` is the replaceable in-memory adapter. The hash-based
+detail navigation is scoped to the current demo viewer and supports browser back.
+To ship this feature, supply a real Projects API adapter, authenticated identity,
+server-enforced scope and permissions, durable storage, and a production
+timesheet integration. No Projects endpoint, time recording or approvals exist.
+
 ## Structure
 
 ```text
@@ -72,6 +102,8 @@ libs/
     ui/                        Helm-style button using spartan BrnButton
     feature-status/            Status page
     data-access-status/        HTTP access and response validation
+    feature-projects/          Projects workspace and editor
+    data-access-projects/      Demo adapter, permissions and selectors
   api/
     feature-status/            Status endpoint module
     core/                      Global API configuration
@@ -126,9 +158,10 @@ npx nx graph
 npx nx graph --file=/tmp/workspace-graph.json
 ```
 
-The graph contains eight projects and these internal dependency edges:
+The graph contains ten projects and these internal dependency edges:
 
-- `web` → `web-feature-status` → `web-ui`, `web-data-access-status`
+- `web` → `web-feature-projects` → `web-ui`, `web-data-access-projects`, `web-feature-status`
+- `web-feature-status` → `web-ui`, `web-data-access-status`
 - `web-data-access-status` → `shared-schemas`
 - `api` → `api-feature-status`, `api-core`
 - `api-feature-status` → `shared-schemas`
