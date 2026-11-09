@@ -1,7 +1,9 @@
 node_modules/
 dist/
 .nx/
+.angular/
 coverage/
+*.log
 .env
 .env.*
 !.env.example

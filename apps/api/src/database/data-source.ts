@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import { config } from 'dotenv';
 import { DataSource } from 'typeorm';
 import { validateEnvironment } from '../config/environment';
-import { databaseOptions } from './database-options';
+import { databaseOptions } from '../database-options';
 
 config({ quiet: true });
 

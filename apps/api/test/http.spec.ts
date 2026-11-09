@@ -54,7 +54,7 @@ describe('global HTTP behavior', () => {
       DB_USER: 'api',
       DB_PASSWORD: 'test-only',
     });
-    const { AppModule } = await import('../src/app.module');
+    const { AppModule } = await import('../src/app/app.module');
     const module = await Test.createTestingModule({
       imports: [AppModule],
       controllers: [ValidationController],

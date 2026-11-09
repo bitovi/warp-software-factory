@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { describe, it } from 'node:test';
 import { validateEnvironment } from '../src/config/environment';
-import { databaseOptions } from '../src/database/database-options';
+import { databaseOptions } from '../src/database-options';
 
 const required = {
   DB_HOST: ' localhost ',
@@ -85,7 +85,7 @@ describe('environment validation', () => {
     for (const [key, value] of [
       ['NODE_ENV', 'private-input'],
       ['DB_SSL', 'private-input'],
-    ]) {
+    ] as const) {
       assert.throws(
         () => validateEnvironment({ ...required, [key]: value }),
         (error: unknown) => {
@@ -99,24 +99,15 @@ describe('environment validation', () => {
   });
 
   it('stops the API process before connecting when configuration is invalid', () => {
-    const result = spawnSync(
-      process.execPath,
-      [
-        require.resolve('ts-node/dist/bin.js'),
-        '--project',
-        'apps/api/tsconfig.json',
-        'apps/api/src/main.ts',
-      ],
-      {
-        env: {
-          ...process.env,
-          ...required,
-          DB_PORT: 'invalid-port',
-        },
-        encoding: 'utf8',
-        timeout: 15000,
+    const result = spawnSync(process.execPath, ['dist/apps/api/main.js'], {
+      env: {
+        ...process.env,
+        ...required,
+        DB_PORT: 'invalid-port',
       },
-    );
+      encoding: 'utf8',
+      timeout: 15000,
+    });
     assert.ifError(result.error);
     assert.notEqual(result.status, 0);
     const output = result.stdout + result.stderr;

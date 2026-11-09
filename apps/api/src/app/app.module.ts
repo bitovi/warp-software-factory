@@ -2,14 +2,16 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER, APP_PIPE } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { StatusModule } from '@wsf/api/feature-status';
 import { ZodValidationPipe } from 'nestjs-zod';
-import { ApiExceptionFilter } from './common/api-exception.filter';
-import { Environment, validateEnvironment } from './config/environment';
-import { databaseOptions } from './database/database-options';
-import { HealthController } from './health/health.controller';
+import { ApiExceptionFilter } from '../common/api-exception.filter';
+import { Environment, validateEnvironment } from '../config/environment';
+import { databaseOptions } from '../database-options';
+import { HealthController } from '../health/health.controller';
 
 @Module({
   imports: [
+    StatusModule,
     ConfigModule.forRoot({
       isGlobal: true,
       cache: true,

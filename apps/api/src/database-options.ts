@@ -1,6 +1,6 @@
 import { join } from 'node:path';
 import { DataSourceOptions } from 'typeorm';
-import { Environment } from '../config/environment';
+import { Environment } from './config/environment';
 
 export function databaseOptions(
   env: Environment,
@@ -16,8 +16,8 @@ export function databaseOptions(
     synchronize: false,
     migrationsRun: false,
     migrationsTransactionMode: 'all',
-    entities: [join(__dirname, 'entities', '*.entity.{ts,js}')],
-    migrations: [join(__dirname, 'migrations', '*.{ts,js}')],
+    entities: [join(__dirname, 'database', 'entities', '*.entity.{ts,js}')],
+    migrations: [join(__dirname, 'database', 'migrations', '*.{ts,js}')],
     connectTimeoutMS: 5000,
     extra: { statement_timeout: 5000 },
   };

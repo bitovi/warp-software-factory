@@ -8,7 +8,7 @@ import request from 'supertest';
 import { Column, DataSource, Entity } from 'typeorm';
 import { ApiExpressAdapter } from '../src/common/api-express.adapter';
 import { validateEnvironment } from '../src/config/environment';
-import { databaseOptions } from '../src/database/database-options';
+import { databaseOptions } from '../src/database-options';
 import { BaseEntity } from '../src/database/entities/base.entity';
 
 @Entity({ name: 'base_entity_probe', schema: 'app' })
@@ -118,7 +118,7 @@ describe('PostgreSQL foundation', () => {
   });
 
   it('serves the real module with a live database and fails after disconnection', async () => {
-    const { AppModule } = await import('../src/app.module');
+    const { AppModule } = await import('../src/app/app.module');
     const module = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();

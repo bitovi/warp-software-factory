@@ -1,9 +1,13 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "rootDir": "src",
-    "outDir": "../../dist/apps/api"
+    "outDir": "../../dist/out-tsc",
+    "module": "commonjs",
+    "types": ["node"],
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "target": "ES2022",
+    "moduleResolution": "node10"
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["test"]
+  "include": ["src/**/*.ts"]
 }

@@ -1,26 +1,64 @@
 {
   "name": "api",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "projectType": "application",
   "sourceRoot": "apps/api/src",
+  "projectType": "application",
   "targets": {
     "build": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "tsc --project apps/api/tsconfig.app.json"
-      }
+        "command": "webpack-cli build && tsc -p tsconfig.database.json",
+        "env": {
+          "NODE_ENV": "production"
+        },
+        "cwd": "apps/api"
+      },
+      "configurations": {
+        "development": {
+          "env": {
+            "NODE_ENV": "development"
+          }
+        },
+        "production": {
+          "env": {
+            "NODE_ENV": "production"
+          }
+        }
+      },
+      "outputs": ["{workspaceRoot}/dist/apps/api"]
     },
     "serve": {
-      "executor": "nx:run-commands",
       "continuous": true,
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "development",
+      "dependsOn": [],
       "options": {
-        "command": "ts-node --project apps/api/tsconfig.json apps/api/src/main.ts"
+        "buildTarget": "api:build",
+        "runBuildTargetDependencies": false,
+        "inspect": false
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "api:build:development"
+        },
+        "production": {
+          "buildTarget": "api:build:production"
+        }
       }
+    },
+    "typecheck": {
+      "command": "tsc -p apps/api/tsconfig.json --noEmit"
     },
     "test": {
       "executor": "nx:run-commands",
+      "cache": false,
+      "dependsOn": ["build"],
       "options": {
-        "command": "node --require ts-node/register --test --test-concurrency=1 apps/api/test/*.spec.ts",
+        "commands": [
+          "node --require ts-node/register --require tsconfig-paths/register --test --test-concurrency=1 apps/api/test/*.spec.ts",
+          "node --test apps/api/test/api.test.mjs"
+        ],
+        "parallel": false,
         "env": {
           "TS_NODE_PROJECT": "apps/api/tsconfig.json"
         }
@@ -30,22 +68,10 @@
       "executor": "nx:run-commands",
       "cache": false,
       "options": {
-        "command": "node --require ts-node/register --test --test-concurrency=1 apps/api/test/*.integration.ts",
+        "command": "node --require ts-node/register --require tsconfig-paths/register --test --test-concurrency=1 apps/api/test/*.integration.ts",
         "env": {
           "TS_NODE_PROJECT": "apps/api/tsconfig.json"
         }
-      }
-    },
-    "lint": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "eslint apps/api"
-      }
-    },
-    "typecheck": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "tsc --project apps/api/tsconfig.json --noEmit"
       }
     },
     "migration:generate": {
@@ -78,5 +104,6 @@
         }
       }
     }
-  }
+  },
+  "tags": ["scope:api", "type:app"]
 }

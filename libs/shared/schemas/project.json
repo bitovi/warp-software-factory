@@ -1,0 +1,14 @@
+{
+  "name": "shared-schemas",
+  "projectType": "library",
+  "sourceRoot": "libs/shared/schemas/src",
+  "tags": ["scope:shared", "type:util"],
+  "targets": {
+    "typecheck": {
+      "command": "tsc -p libs/shared/schemas/tsconfig.lib.json --noEmit"
+    },
+    "test": {
+      "command": "tsx --test libs/shared/schemas/src/index.spec.ts"
+    }
+  }
+}

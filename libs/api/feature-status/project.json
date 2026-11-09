@@ -1,0 +1,11 @@
+{
+  "name": "api-feature-status",
+  "projectType": "library",
+  "sourceRoot": "libs/api/feature-status/src",
+  "tags": ["scope:api", "type:feature"],
+  "targets": {
+    "typecheck": {
+      "command": "tsc -p libs/api/feature-status/tsconfig.lib.json --noEmit"
+    }
+  }
+}

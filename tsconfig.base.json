@@ -1,14 +1,35 @@
 {
   "compilerOptions": {
-    "target": "ES2023",
-    "module": "commonjs",
-    "moduleResolution": "node",
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022", "DOM"],
     "strict": true,
-    "esModuleInterop": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "forceConsistentCasingInFileNames": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
+    "useDefineForClassFields": false,
+    "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "sourceMap": true
+    "baseUrl": ".",
+    "paths": {
+      "@wsf/shared/schemas": ["libs/shared/schemas/src/index.ts"],
+      "@wsf/web/ui": ["libs/web/ui/src/index.ts"],
+      "@wsf/web/feature-status": ["libs/web/feature-status/src/index.ts"],
+      "@wsf/web/data-access-status": [
+        "libs/web/data-access-status/src/index.ts"
+      ],
+      "@wsf/api/core": ["libs/api/core/src/index.ts"],
+      "@wsf/api/feature-status": ["libs/api/feature-status/src/index.ts"]
+    }
+  },
+  "angularCompilerOptions": {
+    "strictInjectionParameters": true,
+    "strictInputAccessModifiers": true,
+    "strictTemplates": true
   }
 }
