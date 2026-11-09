@@ -1,0 +1,11 @@
+{
+  "name": "web-feature-reports",
+  "projectType": "library",
+  "sourceRoot": "libs/web/feature-reports/src",
+  "tags": ["scope:web", "type:feature"],
+  "targets": {
+    "typecheck": {
+      "command": "ngc -p libs/web/feature-reports/tsconfig.lib.json --noEmit"
+    }
+  }
+}

@@ -45,7 +45,8 @@ does not create npm shims by default, and `corepack install` only caches the
 configured package manager. These commands do not change plain `npm`. To use
 Corepack explicitly, run `corepack npm ci` or `corepack npm run check`.
 
-Open http://localhost:4200 and select **Check API connection**. The spartan button
+Open http://localhost:4200 for the reports demo. Select **Workspace status**, then
+**Check API connection**. The spartan button
 calls `/api/status` through the development proxy to http://localhost:3000.
 A successful, schema-validated response shows `api · ok`. The page also handles
 an unavailable API or an invalid response. `PORT` overrides the API port; update
@@ -60,6 +61,33 @@ The API exposes `GET http://localhost:3000/api/status`:
 These are development servers. Production hosting, a production `/api` reverse
 proxy, authentication, and persistence are not configured.
 
+## Reports demo
+
+`/reports` shows a deterministic sample workspace with 56 entries from October 26
+through November 8, 2026. Date presets use November 8 as the demo's reference day,
+not the system clock. The reports page needs no running API.
+
+- Date range, project/client/person multi-selects, billable status, approval status,
+  grouping, chart breakdown, and Summary/Detailed view are stored in query parameters.
+  Copy the URL to share a selection. Reload and browser Back/Forward restore it.
+- Cards, charts, subtotals, and exports derive from the same signal-based
+  `ReportsStore`. Dates are inclusive UTC calendar dates. Charts show tracked days.
+- CSV, XLSX, and paginated PDF downloads snapshot the selected filters, view,
+  grouping, summary metrics, and all filtered entries. Collapsing a group does not
+  exclude it from export. All amounts use USD. CSV text is formula-escaped; XLSX
+  uses explicit string cells. XLSX/PDF code loads only when exporting.
+- **Demo access** switches frontend permission examples. Without `reports:view`,
+  the page and navigation item disappear. Without `reports:financial`, amounts
+  disappear from cards, entries, subtotals, and every export format.
+
+This is not production authorization. The demo permission switch is not a login,
+and fixture amounts ship in the browser bundle. There is no report API, database,
+or server-side security. Replace the `REPORTS_SOURCE` injection-token provider
+with authenticated, server-authorized data and permission signals before using
+real data. The server must enforce both permissions and exclude forbidden
+financial fields from responses. PDF uses the standard Helvetica font, suitable
+for this Latin-script fixture; other scripts require an embedded Unicode font.
+
 ## Structure
 
 ```text
@@ -72,6 +100,8 @@ libs/
     ui/                        Helm-style button using spartan BrnButton
     feature-status/            Status page
     data-access-status/        HTTP access and response validation
+    feature-reports/           Reports workspace, charts, URL/history integration
+    data-access-reports/       Signal store, fixture source, filters and exporters
   api/
     feature-status/            Status endpoint module
     core/                      Global API configuration
@@ -126,9 +156,10 @@ npx nx graph
 npx nx graph --file=/tmp/workspace-graph.json
 ```
 
-The graph contains eight projects and these internal dependency edges:
+The graph contains ten projects and these internal dependency edges:
 
 - `web` → `web-feature-status` → `web-ui`, `web-data-access-status`
+- `web` → `web-feature-reports` → `web-feature-status`, `web-data-access-reports`
 - `web-data-access-status` → `shared-schemas`
 - `api` → `api-feature-status`, `api-core`
 - `api-feature-status` → `shared-schemas`
@@ -144,6 +175,9 @@ npm run check
 This checks Prettier, lint, strict TypeScript (including Angular templates), schema
 tests, the compiled API over HTTP, module boundaries, and both production builds.
 The HTTP client test covers schema validation and backend errors.
+Reports tests cover filter intersections, URL round trips, permission revocation,
+reactive totals/charts, immutable export snapshots, formula safety, and real
+CSV/XLSX/PDF output.
 The API test builds first and uses a free port. Individual commands:
 
 ```bash
