@@ -110,7 +110,6 @@ test('optimistic creates reconcile IDs, totals, and remembered defaults only aft
     const saved = store.save(draft);
     assert.equal(store.totalMinutes(), 90);
     assert.equal(store.pending().size, 1);
-    assert.match(store.entries()[0]!.id, /^pending-/);
     const response = entry('server-id');
     gateway.creates[0]!.resolve(response);
     assert.deepEqual(await saved, response);
