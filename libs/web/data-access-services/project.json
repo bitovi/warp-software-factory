@@ -1,0 +1,14 @@
+{
+  "name": "web-data-access-services",
+  "projectType": "library",
+  "sourceRoot": "libs/web/data-access-services/src",
+  "tags": ["scope:web", "type:data-access"],
+  "targets": {
+    "test": {
+      "command": "tsx --tsconfig tsconfig.base.json --test libs/web/data-access-services/src/lib/services-catalog.spec.ts"
+    },
+    "typecheck": {
+      "command": "ngc -p libs/web/data-access-services/tsconfig.lib.json --noEmit"
+    }
+  }
+}

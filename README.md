@@ -45,7 +45,7 @@ does not create npm shims by default, and `corepack install` only caches the
 configured package manager. These commands do not change plain `npm`. To use
 Corepack explicitly, run `corepack npm ci` or `corepack npm run check`.
 
-Open http://localhost:4200 and select **Check API connection**. The spartan button
+Open http://localhost:4200, select **Workspace status**, then **Check API connection**. The spartan button
 calls `/api/status` through the development proxy to http://localhost:3000.
 A successful, schema-validated response shows `api · ok`. The page also handles
 an unavailable API or an invalid response. `PORT` overrides the API port; update
@@ -60,6 +60,33 @@ The API exposes `GET http://localhost:3000/api/status`:
 These are development servers. Production hosting, a production `/api` reverse
 proxy, authentication, and persistence are not configured.
 
+## Services catalog preview
+
+The **Services** screen provides a session-only preview with sample services,
+USD, and explicit sample admin permissions. Create and edit services, choose a
+color, set a default rate, and change billable status. Search or filter the
+catalog, archive or restore services, and confirm deletion of unused services.
+The sample Consulting service is in use and cannot be deleted. Reloading resets
+all changes. The preview is not a production administration screen.
+
+`ServicesPage` consumes the injectable `SERVICES_CATALOG` contract. Its default
+provider denies management and rate access. `ServicesPreview` supplies the sample
+context and session adapter separately; it does not represent signed-in access.
+Without `rates:view`, the adapter omits rate properties from service projections,
+and the screen omits both the rate column and rate input. Edits preserve existing
+hidden rates; services created without rate access start at zero. Amounts use
+integer minor units and the configured currency's decimal precision.
+
+`activeOptions` exposes only active service IDs, names, and colors for future
+project and timesheet pickers. Those picker features do not exist yet. No service
+endpoint, database, company settings, or authentication is connected. A future
+server-backed adapter must enforce company isolation, admin permissions, rate
+redaction, and an authoritative usage check for deletion on the server. Client
+checks and sample usage counts are not security controls.
+
+The shared `DataTable` accepts columns, keyed rows, and a cell template. It owns
+semantic headers, the empty state, and horizontal overflow for narrow screens.
+
 ## Structure
 
 ```text
@@ -69,9 +96,11 @@ apps/
 libs/
   shared/schemas/               Zod schemas and inferred response types
   web/
-    ui/                        Helm-style button using spartan BrnButton
+    ui/                        Helm-style button and reusable data table
     feature-status/            Status page
     data-access-status/        HTTP access and response validation
+    feature-services/          Services management and session preview composition
+    data-access-services/      Catalog contract, session adapter, picker projection
   api/
     feature-status/            Status endpoint module
     core/                      Global API configuration
@@ -126,10 +155,11 @@ npx nx graph
 npx nx graph --file=/tmp/workspace-graph.json
 ```
 
-The graph contains eight projects and these internal dependency edges:
+The graph contains ten projects and these internal dependency edges:
 
 - `web` → `web-feature-status` → `web-ui`, `web-data-access-status`
 - `web-data-access-status` → `shared-schemas`
+- `web` → `web-feature-services` → `web-ui`, `web-data-access-services`
 - `api` → `api-feature-status`, `api-core`
 - `api-feature-status` → `shared-schemas`
 
