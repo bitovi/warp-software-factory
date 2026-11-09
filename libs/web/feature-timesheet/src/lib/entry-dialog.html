@@ -1,0 +1,202 @@
+<header class="dialog-header">
+  <div>
+    <p class="eyebrow">Time entry · demo workspace</p>
+    <h2 brnDialogTitle>
+      {{ existing ? 'Edit time entry' : 'Add time entry' }}
+    </h2>
+    <p brnDialogDescription>
+      One form, from calendar or grid. Required fields are marked *.
+    </p>
+  </div>
+  <button
+    type="button"
+    class="icon-button"
+    aria-label="Close dialog"
+    [disabled]="saving()"
+    (click)="close()"
+  >
+    ×
+  </button>
+</header>
+<form (ngSubmit)="save()" novalidate [attr.aria-busy]="saving()">
+  <fieldset [disabled]="saving()">
+    <div class="form-columns">
+      <div class="field">
+        <label for="entry-project">Project *</label>
+        <select
+          id="entry-project"
+          name="project"
+          required
+          [ngModel]="draft().projectId"
+          (ngModelChange)="change('projectId', $event)"
+          [attr.aria-invalid]="!!error('projectId')"
+          aria-describedby="project-error"
+        >
+          <option value="">Select a project</option>
+          @for (group of groups(); track group.client) {
+            <optgroup [label]="group.client">
+              @for (project of group.projects; track project.id) {
+                <option [value]="project.id">{{ project.name }}</option>
+              }
+            </optgroup>
+          }
+        </select>
+        <p id="project-error" class="field-error">{{ error('projectId') }}</p>
+      </div>
+      <div class="field">
+        <label for="entry-service">Service *</label>
+        <select
+          id="entry-service"
+          name="service"
+          required
+          [ngModel]="draft().serviceId"
+          (ngModelChange)="change('serviceId', $event)"
+          [disabled]="!draft().projectId"
+          [attr.aria-invalid]="!!error('serviceId')"
+          aria-describedby="service-error"
+        >
+          <option value="">Select a service</option>
+          @for (service of services(); track service.id) {
+            <option [value]="service.id">{{ service.name }}</option>
+          }
+        </select>
+        <p id="service-error" class="field-error">{{ error('serviceId') }}</p>
+      </div>
+      <div class="field">
+        <label for="entry-date">Date *</label>
+        <input
+          id="entry-date"
+          name="date"
+          type="date"
+          required
+          [ngModel]="draft().date"
+          (ngModelChange)="change('date', $event)"
+          [attr.aria-invalid]="!!error('date')"
+          aria-describedby="date-error"
+        />
+        <p id="date-error" class="field-error">{{ error('date') }}</p>
+      </div>
+      <div class="field">
+        <label for="entry-duration">Duration *</label>
+        <input
+          id="entry-duration"
+          name="duration"
+          type="text"
+          required
+          placeholder="1:30, 1.5, or 90m"
+          [ngModel]="draft().duration"
+          (ngModelChange)="change('duration', $event)"
+          [attr.aria-invalid]="!!error('duration')"
+          aria-describedby="duration-help duration-error"
+        />
+        <p id="duration-help" class="hint">
+          Whole minutes. Decimal values are hours.
+        </p>
+        <p id="duration-error" class="field-error">{{ error('duration') }}</p>
+      </div>
+      <div class="field">
+        <label for="entry-start">Start <span>(optional)</span></label>
+        <input
+          id="entry-start"
+          name="start"
+          type="time"
+          [ngModel]="draft().start"
+          (ngModelChange)="change('start', $event)"
+          [attr.aria-invalid]="!!error('start')"
+          aria-describedby="start-error"
+        />
+        <p id="start-error" class="field-error">{{ error('start') }}</p>
+      </div>
+      <div class="field">
+        <label for="entry-end">End <span>(optional)</span></label>
+        <input
+          id="entry-end"
+          name="end"
+          type="time"
+          [ngModel]="draft().end"
+          (ngModelChange)="change('end', $event)"
+          [attr.aria-invalid]="!!error('end')"
+          aria-describedby="end-error time-help"
+        />
+        <p id="end-error" class="field-error">{{ error('end') }}</p>
+      </div>
+    </div>
+    <p id="time-help" class="hint">
+      If you enter times, provide both on the same date and match the duration
+      before rounding.
+    </p>
+    <div class="field description-field">
+      <label for="entry-description"
+        >Description
+        {{
+          store.context()?.rules?.requireDescription ? '*' : '(optional)'
+        }}</label
+      >
+      <textarea
+        id="entry-description"
+        name="description"
+        [required]="store.context()?.rules?.requireDescription ?? false"
+        rows="2"
+        placeholder="What did you work on?"
+        [ngModel]="draft().description"
+        (ngModelChange)="change('description', $event)"
+        [attr.aria-invalid]="!!error('description')"
+        aria-describedby="description-error"
+      ></textarea>
+      <p id="description-error" class="field-error">
+        {{ error('description') }}
+      </p>
+    </div>
+    <label class="check-label" for="entry-billable">
+      <input
+        id="entry-billable"
+        name="billable"
+        type="checkbox"
+        [ngModel]="draft().billable"
+        (ngModelChange)="change('billable', $event)"
+        [attr.aria-invalid]="!!error('billable')"
+        aria-describedby="billable-error"
+      />
+      Billable time
+    </label>
+    <p id="billable-error" class="field-error">{{ error('billable') }}</p>
+    <div class="rounding-preview" role="status">
+      <div>
+        <span>Saved duration</span><strong>{{ preview() }}</strong>
+      </div>
+      <p>
+        Rounded up to {{ store.context()?.rules?.roundingMinutes }} minutes.
+        @if (rate(); as snapshot) {
+          Rate snapshot: {{ snapshot.currency }} {{ snapshot.hourlyRate }}/h.
+        }
+      </p>
+    </div>
+    @if (error('form')) {
+      <p role="alert" class="field-error form-error">{{ error('form') }}</p>
+    }
+    @if (submitted() && !validation().input) {
+      <p role="alert" class="field-error">
+        Check the highlighted fields before saving.
+      </p>
+    }
+    @if (hasServerErrors()) {
+      <p role="alert" class="field-error">
+        Could not save. Check the highlighted fields.
+      </p>
+    }
+  </fieldset>
+  <footer class="dialog-footer">
+    <span class="hint">Enter to save · Esc to close</span>
+    <button
+      type="button"
+      class="secondary-button"
+      [disabled]="saving()"
+      (click)="close()"
+    >
+      Cancel
+    </button>
+    <button hlmBtn type="submit" [disabled]="saving()">
+      {{ saving() ? 'Saving…' : 'Save entry' }}
+    </button>
+  </footer>
+</form>

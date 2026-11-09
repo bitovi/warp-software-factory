@@ -45,7 +45,8 @@ does not create npm shims by default, and `corepack install` only caches the
 configured package manager. These commands do not change plain `npm`. To use
 Corepack explicitly, run `corepack npm ci` or `corepack npm run check`.
 
-Open http://localhost:4200 and select **Check API connection**. The spartan button
+Open http://localhost:4200. The timesheet development demo uses no API.
+Expand **Workspace foundation status** and select **Check API connection**. The spartan button
 calls `/api/status` through the development proxy to http://localhost:3000.
 A successful, schema-validated response shows `api · ok`. The page also handles
 an unavailable API or an invalid response. `PORT` overrides the API port; update
@@ -60,6 +61,46 @@ The API exposes `GET http://localhost:3000/api/status`:
 These are development servers. Production hosting, a production `/api` reverse
 proxy, authentication, and persistence are not configured.
 
+## Timesheet development demo
+
+The calendar day buttons and grid actions open the same spartan entry dialog.
+These are minimal entry-point demos, not a FullCalendar or weekly grid implementation.
+Entries reset on reload. Only the last successfully saved project/service selection
+is kept in browser local storage; blocked storage falls back to in-memory defaults.
+
+Development policy comes from `TimesheetGateway.context()`: round **up** to 15
+minutes, cap each date at 480 minutes, require a description, and lock dates before
+2026-01-01. Approved entries are read-only. These are deterministic demo values,
+not agreed production rules. The injected policy controls the form and store.
+The demo uses USD hourly rates; edits preserve the rate snapshot unless the
+project or service changes. The current week uses the browser's local date and
+Monday as its first day. Calendar dates do not shift with UTC conversion.
+
+Duration accepts `1:30`, `1.5`, `90m`, `.5`, and `1.5h`. Values must resolve to
+positive whole minutes. Optional start/end times use 24-hour `HH:mm`, must both
+be present on the entry date, and must match the duration **before** rounding.
+Overnight intervals and fractional minutes are rejected.
+Enter in a single-line field saves; Enter in the description adds a line.
+Esc closes, and spartan traps/restores focus. Dismissal is blocked while saving.
+
+`TimesheetStore` exposes range/filter signals, filtered day/week totals, and
+optimistic create/update/delete. Failed writes roll back only the affected entry.
+Writes to the same entry are blocked while pending; separate entries can save
+concurrently. Older range responses cannot overwrite a newer selection or a
+mutation. A range response that overlaps a write triggers a refresh after writes
+settle. Daily validation uses the unfiltered cached entries.
+
+`TimesheetPage` provides `DemoTimesheetGateway`. Replace that provider to connect
+a real API; there is no timesheet HTTP contract yet. The production adapter must
+validate responses, supply assigned projects/services and valid policy values
+(positive integer rounding/daily limits and an ISO lock date or null), map server
+field names to `EntryValidationError.fields` (`projectId`, `serviceId`, `date`,
+`duration`, `start`, `end`, `description`, `billable`, or `form`), and return the
+canonical saved entry/rate snapshot. Map unknown or cross-field errors to `form`.
+The server must enforce permissions, rounding, locks, daily caps across all dates
+and clients, approval locks, and rate snapshots. Client checks are not authorization.
+Server errors are simulated only in automated tests, not in the demo adapter.
+
 ## Structure
 
 ```text
@@ -72,6 +113,8 @@ libs/
     ui/                        Helm-style button using spartan BrnButton
     feature-status/            Status page
     data-access-status/        HTTP access and response validation
+    feature-timesheet/         Shared entry dialog and demo launchers
+    data-access-timesheet/     Signal store, policy, injectable demo gateway
   api/
     feature-status/            Status endpoint module
     core/                      Global API configuration
@@ -126,9 +169,10 @@ npx nx graph
 npx nx graph --file=/tmp/workspace-graph.json
 ```
 
-The graph contains eight projects and these internal dependency edges:
+The graph contains ten projects and these internal dependency edges:
 
 - `web` → `web-feature-status` → `web-ui`, `web-data-access-status`
+- `web` → `web-feature-timesheet` → `web-ui`, `web-data-access-timesheet`
 - `web-data-access-status` → `shared-schemas`
 - `api` → `api-feature-status`, `api-core`
 - `api-feature-status` → `shared-schemas`
