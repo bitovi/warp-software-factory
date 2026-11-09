@@ -1,0 +1,634 @@
+<a class="skip-link" href="#main-content">Skip to content</a>
+<div class="workspace">
+  <aside class="sidebar">
+    <a
+      class="brand"
+      href="/reports"
+      (click)="$event.preventDefault(); navigate('reports')"
+    >
+      <span class="brand-mark" aria-hidden="true">t</span> tempo<span
+        class="brand-dot"
+        >.</span
+      >
+    </a>
+    <div class="workspace-name">
+      <span class="workspace-icon">S</span>
+      <div>Studio workspace<small>Demo workspace</small></div>
+    </div>
+    <p class="nav-label">WORKSPACE</p>
+    <nav aria-label="Workspace">
+      @if (store.canView()) {
+      <a
+        href="/reports"
+        [class.active]="page() === 'reports'"
+        [attr.aria-current]="page() === 'reports' ? 'page' : null"
+        (click)="$event.preventDefault(); navigate('reports')"
+        ><span aria-hidden="true">▥</span>Reports</a
+      >
+      }
+      <a
+        href="/status"
+        [class.active]="page() === 'status'"
+        [attr.aria-current]="page() === 'status' ? 'page' : null"
+        (click)="$event.preventDefault(); navigate('status')"
+        ><span aria-hidden="true">◉</span>Workspace status</a
+      >
+    </nav>
+    <div class="sidebar-note">
+      <span aria-hidden="true">✧</span
+      ><strong>Make time for what matters.</strong>
+      <p>Turn everyday hours into a clearer picture.</p>
+    </div>
+    <div class="profile">
+      <span class="avatar">AM</span>
+      <div>Alex Morgan<small>Demo workspace</small></div>
+    </div>
+  </aside>
+
+  <div class="main-shell">
+    <header class="topbar">
+      <div>
+        Workspace <span>/</span>
+        <strong>{{ page() === 'reports' ? 'Reports' : 'Status' }}</strong>
+      </div>
+      <span class="sample-badge"><i></i> Sample data</span>
+    </header>
+    <main id="main-content" tabindex="-1">
+      <section class="demo-notice" aria-label="Demo information">
+        <div>
+          <strong>Explore the demo.</strong> Sample time entries · Oct 26–Nov 8,
+          2026. No backend authentication or security.
+        </div>
+        <label
+          >Demo access
+          <select
+            #accessSelect
+            [value]="access()"
+            (change)="setAccess(accessSelect.value)"
+          >
+            <option value="manager">Manager · financial access</option>
+            <option value="member">Member · no financial access</option>
+            <option value="none">No reports access</option>
+          </select>
+        </label>
+      </section>
+
+      @if (page() === 'status') {
+      <wsf-status-page />
+      } @else if (!store.canView()) {
+      <section class="access-denied">
+        <div aria-hidden="true">⌑</div>
+        <h1>Reports are not available</h1>
+        <p>You need <code>reports:view</code> to open this page.</p>
+        <p>Use Demo access to explore another permission level.</p>
+      </section>
+      } @else {
+      <div class="page-heading">
+        <div>
+          <p class="eyebrow">INSIGHTS, NOT GUESSWORK</p>
+          <h1>Time reports</h1>
+          <p>A clear view of where your team's time goes.</p>
+        </div>
+        <div
+          #exportWrapper
+          class="export-wrapper"
+          role="group"
+          aria-label="Export report"
+        >
+          <button
+            type="button"
+            class="button primary"
+            [disabled]="exporting()"
+            [attr.aria-expanded]="exportOpen()"
+            aria-controls="export-options"
+            (click)="exportOpen.set(!exportOpen())"
+          >
+            <span aria-hidden="true">↓</span>{{ exporting() ? 'Preparing
+            export…' : 'Export report' }}<span aria-hidden="true">⌄</span>
+          </button>
+          @if (exportOpen()) {
+          <div
+            id="export-options"
+            class="export-menu"
+            aria-label="Export formats"
+          >
+            <strong>Download current report</strong>
+            <button type="button" (click)="export('csv')">
+              CSV <span>Spreadsheet data</span>
+            </button>
+            <button type="button" (click)="export('xlsx')">
+              XLSX <span>Excel workbook</span>
+            </button>
+            <button type="button" (click)="export('pdf')">
+              PDF <span>Portable report</span>
+            </button>
+            <p>
+              Includes all filtered entries, collapsed groups, and subtotals.
+              Respects financial access.
+            </p>
+          </div>
+          }
+        </div>
+      </div>
+
+      <p class="export-status" role="status" aria-live="polite">
+        {{ message() }}
+      </p>
+      <section class="filter-panel" aria-label="Report filters">
+        <div class="date-row">
+          <span class="filter-caption"
+            ><span aria-hidden="true">◷</span> Reporting period</span
+          >
+          <label class="sr-only" for="preset">Date preset</label>
+          <select
+            id="preset"
+            #preset
+            [value]="activePreset()"
+            (change)="selectPreset(preset.value)"
+          >
+            <option value="" [selected]="!activePreset()">Custom range</option>
+            @for (item of presets; track item.label) {
+            <option
+              [value]="item.label"
+              [selected]="activePreset() === item.label"
+            >
+              {{ item.label }}
+            </option>
+            }
+          </select>
+          <div class="date-inputs">
+            <label class="sr-only" for="from">Start date</label
+            ><input
+              id="from"
+              type="date"
+              #from
+              [value]="store.filters().from"
+              [attr.aria-invalid]="!!dateError()"
+              aria-describedby="date-error"
+              (change)="setDate('from', from)"
+            />
+            <span aria-hidden="true">→</span>
+            <label class="sr-only" for="to">End date</label
+            ><input
+              id="to"
+              type="date"
+              #to
+              [value]="store.filters().to"
+              [attr.aria-invalid]="!!dateError()"
+              aria-describedby="date-error"
+              (change)="setDate('to', to)"
+            />
+          </div>
+          <button class="text-button reset" type="button" (click)="reset()">
+            Reset filters
+          </button>
+        </div>
+        <p id="date-error" class="error" role="alert">{{ dateError() }}</p>
+        <div class="filter-row">
+          @for (filter of multiFilters; track filter.key) {
+          <details #filterMenu class="multi-filter">
+            <summary>
+              {{ filter.label }}<span
+                >{{ store.filters()[filter.key].length ?
+                store.filters()[filter.key].length + ' selected' : 'All' }}
+                <span aria-hidden="true">⌄</span></span
+              >
+            </summary>
+            <div class="filter-options">
+              <strong>{{ filter.label }}</strong>
+              @for (value of store.options()[filter.key]; track value) {
+              <label
+                ><input
+                  type="checkbox"
+                  [checked]="store.filters()[filter.key].includes(value)"
+                  (change)="toggleFilter(filter.key, value)"
+                />{{ value }}</label
+              >
+              } @for (value of store.filters()[filter.key]; track value) { @if
+              (!store.options()[filter.key].includes(value)) {
+              <label
+                ><input
+                  type="checkbox"
+                  checked
+                  (change)="toggleFilter(filter.key, value)"
+                />{{ value }} (unavailable)</label
+              >
+              } }
+            </div>
+          </details>
+          }
+          <label class="select-filter"
+            >Billable<select
+              #billable
+              [value]="store.filters().billable"
+              (change)="selectValue('billable', billable.value)"
+            >
+              <option value="all">All time</option>
+              <option value="yes">Billable</option>
+              <option value="no">Non-billable</option>
+            </select></label
+          >
+          <label class="select-filter"
+            >Status<select
+              #status
+              [value]="store.filters().status"
+              (change)="selectValue('status', status.value)"
+            >
+              <option value="all">All statuses</option>
+              <option value="approved">Approved</option>
+              <option value="pending">Pending</option>
+              <option value="draft">Draft</option>
+            </select></label
+          >
+        </div>
+      </section>
+
+      <div class="results-caption" aria-live="polite">
+        <span><i></i> {{ store.entries().length }} time entries</span
+        ><span
+          >{{ store.filters().from | date:'MMM d':'UTC' }} – {{
+          store.filters().to | date:'MMM d, y':'UTC' }}</span
+        >
+      </div>
+
+      <section
+        class="summary-grid"
+        aria-label="Report totals"
+        [class.three-cards]="!store.canViewFinancial()"
+      >
+        <article class="summary-card">
+          <div>
+            Total hours<span class="metric-icon purple" aria-hidden="true"
+              >◷</span
+            >
+          </div>
+          <strong
+            >{{ store.summary().hours | number:'1.1-1' }}<small
+              >hrs</small
+            ></strong
+          >
+          <p>Across all selected entries</p>
+        </article>
+        <article class="summary-card">
+          <div>
+            Billable hours<span class="metric-icon green" aria-hidden="true"
+              >✓</span
+            >
+          </div>
+          <strong
+            >{{ store.summary().billableHours | number:'1.1-1' }}<small
+              >hrs</small
+            ></strong
+          >
+          <p>Time that moves business forward</p>
+        </article>
+        <article class="summary-card">
+          <div>
+            Billable percentage<span
+              class="metric-icon amber"
+              aria-hidden="true"
+              >%</span
+            >
+          </div>
+          <strong
+            >{{ store.summary().billablePercent | number:'1.0-1' }}<small
+              >%</small
+            ></strong
+          >
+          <div class="progress-track">
+            <span [style.width.%]="store.summary().billablePercent"></span>
+          </div>
+          <p>Of total tracked time</p>
+        </article>
+        @if (store.canViewFinancial()) {
+        <article class="summary-card">
+          <div>
+            Billable amount<span class="metric-icon blue" aria-hidden="true"
+              >$</span
+            >
+          </div>
+          <strong
+            >{{ store.summary().amount | currency:'USD':'symbol':'1.0-2'
+            }}</strong
+          >
+          <p>USD · based on demo billable rates</p>
+        </article>
+        }
+      </section>
+
+      <section class="charts-grid" aria-label="Time visualizations">
+        <article class="panel trend-panel">
+          <div class="panel-heading">
+            <div>
+              <h2>Hours over time</h2>
+              <p>A daily view of your team's effort</p>
+            </div>
+            <span class="chart-key"><i></i>Total hours</span>
+          </div>
+          @if (store.entries().length) {
+          <wsf-report-chart
+            [points]="store.trend()"
+            description="Daily hours. Exact values are available in View chart data below."
+          />
+          <details class="chart-data">
+            <summary>View chart data</summary>
+            <dl>
+              @for (point of store.trend(); track point.label) {
+              <div>
+                <dt>{{ point.label }}</dt>
+                <dd>{{ point.hours | number:'1.1-1' }} hrs</dd>
+              </div>
+              }
+            </dl>
+          </details>
+          } @else {
+          <div class="chart-empty">No hours in this selection</div>
+          }
+        </article>
+        <article class="panel split-panel">
+          <div class="panel-heading">
+            <div>
+              <h2>Time breakdown</h2>
+              <p>See where the hours add up</p>
+            </div>
+            <label class="sr-only" for="split">Breakdown by</label
+            ><select
+              id="split"
+              #split
+              [value]="store.filters().split"
+              (change)="selectValue('split', split.value)"
+            >
+              <option value="project">Project</option>
+              <option value="client">Client</option>
+            </select>
+          </div>
+          @if (store.entries().length) {
+          <div class="split-content">
+            <div class="donut-wrap">
+              <wsf-report-chart
+                kind="doughnut"
+                [points]="store.split()"
+                description="Hours by selected breakdown. Exact values are listed alongside the chart."
+              />
+              <div class="donut-center">
+                <strong>{{ store.summary().hours | number:'1.0-1' }}</strong
+                ><span>total hours</span>
+              </div>
+            </div>
+            <ul class="chart-legend">
+              @for (point of store.split(); track point.label) {
+              <li>
+                <i></i><span>{{ point.label }}</span
+                ><strong
+                  >{{ point.hours | number:'1.1-1' }}<small> hrs</small></strong
+                >
+              </li>
+              }
+            </ul>
+          </div>
+          } @else {
+          <div class="chart-empty">No hours in this selection</div>
+          }
+        </article>
+      </section>
+
+      <section class="panel report-table" aria-labelledby="report-heading">
+        <div class="table-toolbar">
+          <div class="tabs" aria-label="Report view">
+            <button
+              type="button"
+              [class.selected]="store.filters().view === 'summary'"
+              [attr.aria-pressed]="store.filters().view === 'summary'"
+              (click)="update({view: 'summary'})"
+            >
+              Summary</button
+            ><button
+              type="button"
+              [class.selected]="store.filters().view === 'detailed'"
+              [attr.aria-pressed]="store.filters().view === 'detailed'"
+              (click)="update({view: 'detailed'})"
+            >
+              Detailed
+            </button>
+          </div>
+          <label class="group-select"
+            >Group by
+            <select
+              #group
+              [value]="store.filters().groupBy"
+              (change)="selectValue('groupBy', group.value)"
+            >
+              <option value="project">Project</option>
+              <option value="client">Client</option>
+              <option value="person">Person</option>
+              <option value="date">Date</option>
+            </select></label
+          >
+        </div>
+        <div class="table-heading">
+          <h2 id="report-heading">
+            {{ store.filters().view === 'summary' ? 'Time by ' +
+            store.filters().groupBy : 'Time entries' }}
+            <span
+              >{{ store.filters().view === 'summary' ? store.groups().length :
+              store.entries().length }}</span
+            >
+          </h2>
+          @if (store.filters().view === 'summary' && store.groups().length)
+          {<button type="button" class="text-button" (click)="expandAll()">
+            {{ expanded().size === store.groups().length ? 'Collapse all' :
+            'Expand all' }}</button
+          >}
+        </div>
+        @if (!store.entries().length) {
+        <div class="empty-state">
+          <span aria-hidden="true">⌕</span>
+          <h3>No time entries found</h3>
+          <p>
+            Try a different date range or clear a filter to widen your view.
+          </p>
+          <button type="button" class="button" (click)="reset()">
+            Reset filters
+          </button>
+        </div>
+        } @else if (store.filters().view === 'summary') {
+        <div
+          class="table-scroll"
+          tabindex="0"
+          role="region"
+          aria-label="Grouped time report"
+        >
+          <table>
+            <caption class="sr-only">
+              Time grouped by {{ store.filters().groupBy }}. Expand groups to
+              view entries.
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col">{{ store.filters().groupBy }}</th>
+                <th scope="col" class="numeric">Entries</th>
+                <th scope="col" class="numeric">Billable hours</th>
+                <th scope="col" class="numeric">Total hours</th>
+                @if (store.canViewFinancial()) {
+                <th scope="col" class="numeric">Amount (USD)</th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (group of store.groups(); track group.name) {
+              <tr class="group-row">
+                <th scope="row">
+                  <button
+                    type="button"
+                    [attr.aria-expanded]="expanded().has(group.name)"
+                    (click)="toggleGroup(group.name)"
+                  >
+                    <span
+                      class="chevron"
+                      [class.open]="expanded().has(group.name)"
+                      aria-hidden="true"
+                      >›</span
+                    >{{ group.name }}
+                  </button>
+                </th>
+                <td class="numeric muted">{{ group.entries.length }}</td>
+                <td class="numeric">
+                  {{ group.summary.billableHours | number:'1.1-1' }}<small>
+                    hrs</small
+                  >
+                </td>
+                <td class="numeric strong">
+                  {{ group.summary.hours | number:'1.1-1' }}<small> hrs</small>
+                </td>
+                @if (store.canViewFinancial()) {
+                <td class="numeric">
+                  {{ group.summary.amount | currency:'USD' }}
+                </td>
+                }
+              </tr>
+              @if (expanded().has(group.name)) { @for (entry of group.entries;
+              track entry.id) {
+              <tr class="detail-row">
+                <td>
+                  <strong>{{ entry.description }}</strong
+                  ><span
+                    >{{ entry.date | date:'MMM d':'UTC' }} · {{ entry.person }}
+                    · {{ entry.project }} · {{ entry.client }} · {{ entry.status
+                    }}</span
+                  >
+                </td>
+                <td class="numeric">1</td>
+                <td class="numeric">
+                  {{ (entry.billable ? entry.minutes / 60 : 0) | number:'1.1-1'
+                  }}
+                </td>
+                <td class="numeric">
+                  {{ entry.minutes / 60 | number:'1.1-1' }}
+                </td>
+                @if (store.canViewFinancial()) {
+                <td class="numeric">{{ entry.amount | currency:'USD' }}</td>
+                }
+              </tr>
+              } } }
+            </tbody>
+            <tfoot>
+              <tr>
+                <th scope="row">Total</th>
+                <td class="numeric">{{ store.entries().length }}</td>
+                <td class="numeric">
+                  {{ store.summary().billableHours | number:'1.1-1' }} hrs
+                </td>
+                <td class="numeric">
+                  {{ store.summary().hours | number:'1.1-1' }} hrs
+                </td>
+                @if (store.canViewFinancial()) {
+                <td class="numeric">
+                  {{ store.summary().amount | currency:'USD' }}
+                </td>
+                }
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        } @else {
+        <div
+          class="table-scroll"
+          tabindex="0"
+          role="region"
+          aria-label="Detailed time report"
+        >
+          <table>
+            <caption class="sr-only">
+              All time entries matching current filters
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col">Date</th>
+                <th scope="col">Entry / project</th>
+                <th scope="col">Person</th>
+                <th scope="col">Status</th>
+                <th scope="col">Billable</th>
+                <th scope="col" class="numeric">Hours</th>
+                @if (store.canViewFinancial()) {
+                <th scope="col" class="numeric">Amount (USD)</th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (entry of store.entries(); track entry.id) {
+              <tr>
+                <td class="nowrap">{{ entry.date | date:'MMM d':'UTC' }}</td>
+                <td class="entry-description">
+                  <strong>{{ entry.description }}</strong
+                  ><span>{{ entry.project }} · {{ entry.client }}</span>
+                </td>
+                <td>{{ entry.person }}</td>
+                <td>
+                  <span
+                    class="status-pill"
+                    [class.approved]="entry.status === 'approved'"
+                    >{{ entry.status }}</span
+                  >
+                </td>
+                <td>{{ entry.billable ? 'Yes' : 'No' }}</td>
+                <td class="numeric strong">
+                  {{ entry.minutes / 60 | number:'1.1-1' }}
+                </td>
+                @if (store.canViewFinancial()) {
+                <td class="numeric">{{ entry.amount | currency:'USD' }}</td>
+                }
+              </tr>
+              }
+            </tbody>
+            <tfoot>
+              <tr>
+                <th scope="row" colspan="5">
+                  Total · {{ store.entries().length }} entries
+                </th>
+                <td class="numeric">
+                  {{ store.summary().hours | number:'1.1-1' }}
+                </td>
+                @if (store.canViewFinancial()) {
+                <td class="numeric">
+                  {{ store.summary().amount | currency:'USD' }}
+                </td>
+                }
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        }
+        <div class="table-footer">
+          <span>All times shown in hours · dates in UTC</span
+          ><span>Exports include every filtered entry</span>
+        </div>
+      </section>
+      <footer class="page-footer">
+        <span class="brand-mini">tempo.</span
+        ><span>Less counting. More understanding.</span
+        ><span>Sample workspace · frontend demo only</span>
+      </footer>
+      }
+    </main>
+  </div>
+</div>
