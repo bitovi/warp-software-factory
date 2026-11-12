@@ -5,42 +5,6 @@
   >Skip to content</a
 >
 <div class="workspace-shell">
-  <aside
-    class="sidebar"
-    [class.nav-open]="menuOpen()"
-    id="workspace-navigation"
-  >
-    <a
-      routerLink="/"
-      class="brand"
-      (click)="menuOpen.set(false)"
-      aria-label="Workspace overview"
-    >
-      <span class="brand-mark" aria-hidden="true">w.</span>
-      <span>Workspace<span class="brand-caption">SOFTWARE FACTORY</span></span>
-    </a>
-    <p class="nav-caption">YOUR WORKSPACE</p>
-    <nav aria-label="Main navigation">
-      @for (item of navigation; track item.path) {
-        <a
-          [routerLink]="item.path"
-          routerLinkActive="nav-active"
-          [routerLinkActiveOptions]="{ exact: item.path === '/' }"
-          ariaCurrentWhenActive="page"
-          (click)="menuOpen.set(false)"
-          class="nav-link"
-        >
-          <span class="nav-number" aria-hidden="true">{{ item.number }}</span>
-          {{ item.label }}
-        </a>
-      }
-    </nav>
-    <div class="sidebar-note">
-      <span class="note-dot" aria-hidden="true"></span>
-      Built on a shared foundation
-      <p>Small features. Clear boundaries.</p>
-    </div>
-  </aside>
   <header class="topbar">
     <div class="flex items-center gap-4">
       <button
@@ -64,6 +28,42 @@
       >Development</span
     >
   </header>
+  <aside
+    class="sidebar"
+    [class.nav-open]="menuOpen()"
+    id="workspace-navigation"
+  >
+    <a
+      routerLink="/"
+      class="brand"
+      (click)="closeMenu(mainContent)"
+      aria-label="Workspace overview"
+    >
+      <span class="brand-mark" aria-hidden="true">w.</span>
+      <span>Workspace<span class="brand-caption">SOFTWARE FACTORY</span></span>
+    </a>
+    <p class="nav-caption">YOUR WORKSPACE</p>
+    <nav aria-label="Main navigation">
+      @for (item of navigation; track item.path) {
+        <a
+          [routerLink]="item.path"
+          routerLinkActive="nav-active"
+          [routerLinkActiveOptions]="{ exact: item.path === '/' }"
+          ariaCurrentWhenActive="page"
+          (click)="closeMenu(mainContent)"
+          class="nav-link"
+        >
+          <span class="nav-number" aria-hidden="true">{{ item.number }}</span>
+          {{ item.label }}
+        </a>
+      }
+    </nav>
+    <div class="sidebar-note">
+      <span class="note-dot" aria-hidden="true"></span>
+      Built on a shared foundation
+      <p>Small features. Clear boundaries.</p>
+    </div>
+  </aside>
   <main id="main-content" tabindex="-1" #mainContent class="content">
     <router-outlet (activate)="focusContent(mainContent)" />
   </main>

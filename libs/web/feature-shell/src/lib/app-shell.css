@@ -10,6 +10,7 @@
 }
 
 .sidebar {
+  grid-column: 1;
   grid-row: 1 / -1;
   display: flex;
   flex-direction: column;
@@ -105,6 +106,8 @@
 }
 
 .topbar {
+  grid-column: 2;
+  grid-row: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -115,6 +118,8 @@
 }
 
 .content {
+  grid-column: 2;
+  grid-row: 2;
   min-width: 0;
   padding: 48px 40px;
   outline: none;
@@ -147,6 +152,7 @@
   }
 
   .topbar {
+    grid-column: 1;
     grid-row: 1;
     flex-wrap: wrap;
     padding: 16px 20px;
@@ -172,6 +178,7 @@
   }
 
   .content {
+    grid-column: 1;
     grid-row: 3;
     padding: 32px 20px;
   }

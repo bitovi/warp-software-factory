@@ -204,6 +204,7 @@ tests, the compiled API over HTTP, module boundaries, and both production builds
 Client/store tests cover schema validation, loading, overlapping requests, errors,
 retry, stale-data removal, and teardown. Interceptor tests cover URL scoping and
 safe error propagation. The compiled API test exercises status and health over HTTP.
+Shell DOM tests cover menu tab order and focus after route and same-route activation.
 The API test builds first and uses a free port. Individual commands:
 
 ```bash

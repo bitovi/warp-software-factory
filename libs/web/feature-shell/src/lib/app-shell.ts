@@ -20,6 +20,12 @@ export class AppShell {
     { path: '/reports', label: 'Reports', number: '05' },
   ];
 
+  protected closeMenu(content: HTMLElement): void {
+    if (!this.menuOpen()) return;
+    this.menuOpen.set(false);
+    content.focus();
+  }
+
   protected focusContent(content: HTMLElement): void {
     if (this.hasActivated) content.focus();
     this.hasActivated = true;
