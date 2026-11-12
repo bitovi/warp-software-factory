@@ -7,7 +7,7 @@
     "build": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "webpack-cli build",
+        "command": "webpack-cli build && tsc -p tsconfig.database.json",
         "env": {
           "NODE_ENV": "production"
         },
@@ -47,11 +47,62 @@
       }
     },
     "typecheck": {
-      "command": "tsc -p apps/api/tsconfig.app.json --noEmit"
+      "command": "tsc -p apps/api/tsconfig.json --noEmit"
     },
     "test": {
-      "command": "node --test apps/api/test/api.test.mjs",
-      "dependsOn": ["build"]
+      "executor": "nx:run-commands",
+      "cache": false,
+      "dependsOn": ["build"],
+      "options": {
+        "commands": [
+          "node --require ts-node/register --require tsconfig-paths/register --test --test-concurrency=1 apps/api/test/*.spec.ts",
+          "node --test apps/api/test/api.test.mjs"
+        ],
+        "parallel": false,
+        "env": {
+          "TS_NODE_PROJECT": "apps/api/tsconfig.json"
+        }
+      }
+    },
+    "test-integration": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "node --require ts-node/register --require tsconfig-paths/register --test --test-concurrency=1 apps/api/test/*.integration.ts",
+        "env": {
+          "TS_NODE_PROJECT": "apps/api/tsconfig.json"
+        }
+      }
+    },
+    "migration:generate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "typeorm-ts-node-commonjs migration:generate -d apps/api/src/database/data-source.ts",
+        "env": {
+          "TS_NODE_PROJECT": "apps/api/tsconfig.json"
+        }
+      }
+    },
+    "migration:run": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "typeorm-ts-node-commonjs migration:run -d apps/api/src/database/data-source.ts",
+        "env": {
+          "TS_NODE_PROJECT": "apps/api/tsconfig.json"
+        }
+      }
+    },
+    "migration:revert": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "typeorm-ts-node-commonjs migration:revert -d apps/api/src/database/data-source.ts",
+        "env": {
+          "TS_NODE_PROJECT": "apps/api/tsconfig.json"
+        }
+      }
     }
   },
   "tags": ["scope:api", "type:app"]

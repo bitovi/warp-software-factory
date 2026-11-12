@@ -1,0 +1,8 @@
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "../../dist/apps/api"
+  },
+  "include": ["src/database-options.ts", "src/database/**/*.ts"]
+}
