@@ -1,5 +1,17 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  inject,
+  signal,
+} from '@angular/core';
+import {
+  Router,
+  RouterLink,
+  RouterLinkActive,
+  RouterOutlet,
+} from '@angular/router';
+import { AuthStore } from '@wsf/web/data-access-auth';
 import { HlmButton } from '@wsf/web/ui';
 
 @Component({
@@ -10,6 +22,8 @@ import { HlmButton } from '@wsf/web/ui';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppShell {
+  protected readonly auth = inject(AuthStore);
+  private readonly router = inject(Router);
   private hasActivated = false;
   protected readonly menuOpen = signal(false);
   protected readonly navigation = [
@@ -19,6 +33,16 @@ export class AppShell {
     { path: '/time', label: 'Time entries', number: '04' },
     { path: '/reports', label: 'Reports', number: '05' },
   ];
+
+  constructor() {
+    effect(() => {
+      if (this.auth.status() === 'anonymous') {
+        void this.router.navigate(['/login'], {
+          queryParams: { returnUrl: this.router.url },
+        });
+      }
+    });
+  }
 
   protected closeMenu(content: HTMLElement): void {
     if (!this.menuOpen()) return;
