@@ -6,3 +6,7 @@ export const workspaceStatusSchema = z.strictObject({
 });
 
 export type WorkspaceStatus = z.infer<typeof workspaceStatusSchema>;
+
+export * from './lib/query';
+export * from './lib/task';
+export * from './lib/validation-error';

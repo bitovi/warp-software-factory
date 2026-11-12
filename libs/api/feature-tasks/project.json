@@ -1,0 +1,11 @@
+{
+  "name": "api-feature-tasks",
+  "projectType": "library",
+  "sourceRoot": "libs/api/feature-tasks/src",
+  "tags": ["scope:api", "type:feature"],
+  "targets": {
+    "typecheck": {
+      "command": "tsc -p libs/api/feature-tasks/tsconfig.lib.json --noEmit"
+    }
+  }
+}
