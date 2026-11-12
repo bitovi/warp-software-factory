@@ -1,7 +1,12 @@
 import '@angular/compiler';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { HttpBackend, HttpClient, HttpHandler } from '@angular/common/http';
+import {
+  HttpBackend,
+  HttpClient,
+  HttpErrorResponse,
+  HttpHandler,
+} from '@angular/common/http';
 import {
   HttpTestingController,
   provideHttpClientTesting,
@@ -9,6 +14,7 @@ import {
 import { Injector } from '@angular/core';
 import {
   TaskQuerySchema,
+  ValidationErrorResponseSchema,
   type CreateTask,
   type TaskResponse,
   type ValidationErrorResponse,
@@ -89,12 +95,23 @@ test('uses shared create/update/query contracts and validates every response', a
       message: 'Validation failed',
       fieldErrors: { title: ['Enter a task title.'] },
       formErrors: [],
+      error: 'BadRequestException',
+      path: '/api/tasks',
+      timestamp: '2026-11-12T19:00:00.000Z',
     };
     http.expectOne('/api/tasks').flush(error, {
       status: 400,
       statusText: 'Bad Request',
     });
-    await assert.rejects(rejected, { status: 400, error });
+    await assert.rejects(rejected, (caught: unknown) => {
+      assert.ok(caught instanceof HttpErrorResponse);
+      assert.equal(caught.status, 400);
+      assert.deepEqual(
+        ValidationErrorResponseSchema.parse(caught.error),
+        error,
+      );
+      return true;
+    });
     http.verify();
   } finally {
     injector.destroy();

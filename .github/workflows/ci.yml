@@ -25,4 +25,17 @@ jobs:
           node --version
           npm --version
       - run: npm ci
+      - name: Start PostgreSQL for API checks
+        run: |
+          export DB_PASSWORD=$(node -e "process.stdout.write(require('node:crypto').randomBytes(32).toString('hex'))")
+          node --input-type=module <<'JS'
+          import { readFileSync, writeFileSync } from 'node:fs';
+          for (const [sample, target] of [['.env.example', '.env'], ['.env.test.example', '.env.test']]) {
+            const content = readFileSync(sample, 'utf8').replace('DB_PASSWORD=', `DB_PASSWORD=${process.env.DB_PASSWORD}`);
+            writeFileSync(target, content, { mode: 0o600 });
+          }
+          JS
+          docker compose up -d --wait db
+          docker compose exec -T db sh -c 'createdb -U "$POSTGRES_USER" warp_factory_test'
       - run: npm run check
+      - run: npm run test:integration
