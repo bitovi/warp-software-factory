@@ -23,10 +23,19 @@
         foundation</span
       >
     </div>
-    <span
-      class="rounded-full border border-border bg-background px-3 py-1 text-xs font-medium text-muted-foreground"
-      >Development</span
-    >
+    <div class="flex items-center gap-3">
+      <span class="hidden text-sm text-muted-foreground sm:inline">{{
+        auth.activeCompany()?.name
+      }}</span>
+      <button
+        hlmBtn
+        type="button"
+        [disabled]="auth.status() === 'logging-out'"
+        (click)="auth.logout()"
+      >
+        Sign out
+      </button>
+    </div>
   </header>
   <aside
     class="sidebar"

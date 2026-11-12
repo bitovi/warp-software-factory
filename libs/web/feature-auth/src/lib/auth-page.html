@@ -1,0 +1,64 @@
+<main class="auth-layout">
+  <section class="auth-card" aria-labelledby="auth-heading">
+    <a class="auth-brand" routerLink="/login">w. <span>Workspace</span></a>
+    <p class="eyebrow">YOUR WORKSPACE STARTS HERE</p>
+    <h1 id="auth-heading">
+      {{ signup ? 'Create your account' : 'Welcome back' }}
+    </h1>
+    <p class="intro">
+      {{
+        signup
+          ? 'Bring your team and your work together.'
+          : 'Sign in to continue to your workspace.'
+      }}
+    </p>
+    <form (ngSubmit)="submit()" novalidate [attr.aria-busy]="busy()">
+      @for (field of fields; track field.name) {
+        <div class="field">
+          <label [for]="field.name">{{ field.label }}</label>
+          <input
+            hlmInput
+            [id]="field.name"
+            [name]="field.name"
+            [type]="field.type"
+            [autocomplete]="field.autocomplete"
+            [maxlength]="field.max"
+            required
+            [(ngModel)]="values[field.name]"
+            [disabled]="busy()"
+            [attr.aria-invalid]="!!fieldErrors()[field.name]"
+            [attr.aria-describedby]="
+              fieldErrors()[field.name]
+                ? field.name + '-errors'
+                : signup && field.name === 'password'
+                  ? 'password-hint'
+                  : null
+            "
+          />
+          @if (signup && field.name === 'password') {
+            <p class="hint" id="password-hint">
+              Use 12–128 characters. Spaces are allowed.
+            </p>
+          }
+          @if (fieldErrors()[field.name]; as errors) {
+            <p class="field-error" [id]="field.name + '-errors'">
+              {{ errors.join(' ') }}
+            </p>
+          }
+        </div>
+      }
+      <p class="message" role="alert">{{ message() }}</p>
+      <button hlmBtn type="submit" [disabled]="busy()" class="submit-button">
+        {{ busy() ? 'Please wait…' : signup ? 'Create account' : 'Sign in' }}
+      </button>
+    </form>
+    <p class="auth-switch">
+      {{ signup ? 'Already have an account?' : 'New to Workspace?' }}
+      <a
+        [routerLink]="signup ? '/login' : '/signup'"
+        [queryParams]="{ returnUrl }"
+        >{{ signup ? 'Sign in' : 'Create an account' }}</a
+      >
+    </p>
+  </section>
+</main>

@@ -30,7 +30,9 @@
       "@wsf/api/feature-status": ["libs/api/feature-status/src/index.ts"],
       "@wsf/api/feature-tasks": ["libs/api/feature-tasks/src/index.ts"],
       "@wsf/web/data-access-tasks": ["libs/web/data-access-tasks/src/index.ts"],
-      "@wsf/web/feature-tasks": ["libs/web/feature-tasks/src/index.ts"]
+      "@wsf/web/feature-tasks": ["libs/web/feature-tasks/src/index.ts"],
+      "@wsf/web/data-access-auth": ["libs/web/data-access-auth/src/index.ts"],
+      "@wsf/web/feature-auth": ["libs/web/feature-auth/src/index.ts"]
     }
   },
   "angularCompilerOptions": {

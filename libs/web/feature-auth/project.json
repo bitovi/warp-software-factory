@@ -1,0 +1,14 @@
+{
+  "name": "web-feature-auth",
+  "projectType": "library",
+  "sourceRoot": "libs/web/feature-auth/src",
+  "tags": ["scope:web", "type:feature"],
+  "targets": {
+    "test": {
+      "command": "tsx --tsconfig tsconfig.base.json --test libs/web/feature-auth/src/lib/*.spec.ts"
+    },
+    "typecheck": {
+      "command": "ngc -p libs/web/feature-auth/tsconfig.lib.json --noEmit"
+    }
+  }
+}

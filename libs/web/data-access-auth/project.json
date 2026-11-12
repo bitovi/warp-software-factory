@@ -1,0 +1,14 @@
+{
+  "name": "web-data-access-auth",
+  "projectType": "library",
+  "sourceRoot": "libs/web/data-access-auth/src",
+  "tags": ["scope:web", "type:data-access"],
+  "targets": {
+    "test": {
+      "command": "tsx --tsconfig tsconfig.base.json --test libs/web/data-access-auth/src/lib/*.spec.ts"
+    },
+    "typecheck": {
+      "command": "ngc -p libs/web/data-access-auth/tsconfig.lib.json --noEmit"
+    }
+  }
+}

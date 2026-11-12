@@ -1,8 +1,19 @@
 import { type Routes } from '@angular/router';
+import { authGuard, guestGuard } from '@wsf/web/feature-auth';
 
 export const appRoutes: Routes = [
+  ...['login', 'signup'].map((path) => ({
+    path,
+    title: `${path === 'signup' ? 'Create account' : 'Sign in'} · Workspace`,
+    data: { signup: path === 'signup' },
+    canActivate: [guestGuard],
+    loadComponent: () =>
+      import('@wsf/web/feature-auth').then((module) => module.AuthPage),
+  })),
   {
     path: '',
+    canActivate: [authGuard],
+    canActivateChild: [authGuard],
     loadComponent: () =>
       import('@wsf/web/feature-shell').then((module) => module.AppShell),
     children: [

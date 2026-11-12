@@ -3,7 +3,12 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { after, afterEach, before, test } from 'node:test';
 import { provideLocationMocks } from '@angular/common/testing';
-import { Component, provideZonelessChangeDetection } from '@angular/core';
+import {
+  Component,
+  provideZonelessChangeDetection,
+  signal,
+} from '@angular/core';
+import { AuthStore } from '@wsf/web/data-access-auth';
 import { TestBed } from '@angular/core/testing';
 import {
   BrowserTestingModule,
@@ -51,6 +56,13 @@ async function renderShell() {
   });
   TestBed.configureTestingModule({
     providers: [
+      {
+        provide: AuthStore,
+        useValue: {
+          status: signal('authenticated'),
+          activeCompany: signal(null),
+        },
+      },
       provideZonelessChangeDetection(),
       provideLocationMocks(),
       provideRouter([

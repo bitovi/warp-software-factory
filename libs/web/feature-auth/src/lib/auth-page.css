@@ -1,0 +1,97 @@
+:host {
+  display: block;
+}
+.auth-layout {
+  display: grid;
+  min-height: 100dvh;
+  place-items: center;
+  padding: 2rem 1rem;
+  background: radial-gradient(
+    ellipse at top left,
+    var(--secondary),
+    transparent 60%
+  );
+}
+.auth-card {
+  width: 100%;
+  max-width: 30rem;
+  padding: clamp(1.5rem, 5vw, 2.5rem);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--card);
+  box-shadow: 0 16px 48px #20203008;
+}
+.auth-brand {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 2rem;
+  color: var(--primary);
+  font-size: 1.6rem;
+  font-weight: 750;
+  text-decoration: none;
+}
+.auth-brand span {
+  color: var(--foreground);
+  font-size: 1.1rem;
+}
+.eyebrow {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  color: var(--primary);
+}
+h1 {
+  margin: 0.5rem 0;
+  font-size: 1.8rem;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+}
+.intro,
+.hint,
+.auth-switch {
+  color: var(--muted-foreground);
+}
+.intro {
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+}
+.field {
+  display: grid;
+  gap: 0.4rem;
+  margin-top: 1rem;
+}
+label {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.hint,
+.field-error {
+  font-size: 0.75rem;
+}
+.field-error,
+.message {
+  color: var(--destructive);
+}
+.message {
+  font-size: 0.85rem;
+  margin: 1rem 0;
+}
+.message:empty {
+  display: none;
+}
+.submit-button {
+  width: 100%;
+  min-height: 2.75rem;
+  margin-top: 1.25rem;
+}
+.auth-switch {
+  margin-top: 1.5rem;
+  text-align: center;
+  font-size: 0.8rem;
+}
+.auth-switch a {
+  color: var(--primary);
+  font-weight: 600;
+  text-underline-offset: 3px;
+}
