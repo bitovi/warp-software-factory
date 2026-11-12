@@ -26,6 +26,7 @@
         "libs/web/data-access-status/src/index.ts"
       ],
       "@wsf/api/core": ["libs/api/core/src/index.ts"],
+      "@wsf/api/feature-auth": ["libs/api/feature-auth/src/index.ts"],
       "@wsf/api/feature-status": ["libs/api/feature-status/src/index.ts"],
       "@wsf/api/feature-tasks": ["libs/api/feature-tasks/src/index.ts"],
       "@wsf/web/data-access-tasks": ["libs/web/data-access-tasks/src/index.ts"],
