@@ -1,0 +1,11 @@
+{
+  "name": "web-feature-tasks",
+  "projectType": "library",
+  "sourceRoot": "libs/web/feature-tasks/src",
+  "tags": ["scope:web", "type:feature"],
+  "targets": {
+    "typecheck": {
+      "command": "ngc -p libs/web/feature-tasks/tsconfig.lib.json --noEmit"
+    }
+  }
+}
