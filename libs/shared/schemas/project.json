@@ -8,7 +8,7 @@
       "command": "tsc -p libs/shared/schemas/tsconfig.lib.json --noEmit"
     },
     "test": {
-      "command": "tsx --test libs/shared/schemas/src/index.spec.ts"
+      "command": "tsx --test libs/shared/schemas/src/index.spec.ts libs/shared/schemas/src/lib/*.spec.ts"
     }
   }
 }

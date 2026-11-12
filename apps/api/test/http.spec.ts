@@ -10,6 +10,7 @@ import {
   Post,
 } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
+import { ValidationErrorResponseSchema } from '@wsf/shared/schemas';
 import { NextFunction, Request, Response } from 'express';
 import { createZodDto } from 'nestjs-zod';
 import request from 'supertest';
@@ -110,6 +111,33 @@ describe('global HTTP behavior', () => {
     assert.ok(response.body.error);
     assert.ok(Number.isFinite(Date.parse(response.body.timestamp)));
     assert.doesNotMatch(JSON.stringify(response.body), /private-input|stack/);
+  });
+
+  it('preserves shared field and form errors inside the global envelope', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/api/tasks')
+      .send({ title: ' ', completed: 'private-input' })
+      .expect(400);
+    const validation = ValidationErrorResponseSchema.parse(response.body);
+    assert.deepEqual(validation.fieldErrors['title'], ['Enter a task title.']);
+    assert.ok(validation.fieldErrors['completed']?.length);
+    assert.deepEqual(validation.formErrors, []);
+    assert.equal(response.body.path, '/api/tasks');
+    assert.ok(response.body.error);
+    assert.ok(Number.isFinite(Date.parse(response.body.timestamp)));
+    assert.doesNotMatch(JSON.stringify(response.body), /private-input|stack/);
+
+    const emptyUpdate = await request(app.getHttpServer())
+      .patch('/api/tasks/738dbdca-09d8-47d9-af39-3fb3663fd71c')
+      .send({})
+      .expect(400);
+    const formValidation = ValidationErrorResponseSchema.parse(
+      emptyUpdate.body,
+    );
+    assert.deepEqual(formValidation.fieldErrors, {});
+    assert.deepEqual(formValidation.formErrors, [
+      'Provide at least one task field.',
+    ]);
   });
 
   it('normalizes framework errors and keeps the API prefix', async () => {

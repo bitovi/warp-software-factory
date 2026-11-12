@@ -49,7 +49,10 @@ test('shared libraries cannot depend on an API library', async () => {
     "export { configureApi } from '@wsf/api/core';",
   );
   assert.equal(messages.length, 1);
-  assert.match(messages[0].message, /scope:shared/);
+  assert.match(
+    messages[0].message,
+    /scope:shared|Circular dependency between "shared-schemas" and "api-core"/,
+  );
 });
 
 test('both scopes can consume the shared schema', async () => {

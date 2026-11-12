@@ -1,7 +1,7 @@
 # Warp Software Factory
 
 An Nx workspace with standalone Angular and NestJS applications. Both use the
-same Zod response contract.
+same Zod request, query, and response contracts.
 
 ## Requirements
 
@@ -124,6 +124,72 @@ validates those DTOs. The global exception filter returns
 failures. Unexpected server errors do not expose internal messages or stacks.
 Oversized JSON returns 413. Malformed JSON returns 400 without echoing the body.
 
+## Shared contracts
+
+The **Shared contract demo** below workspace status creates, searches, sorts,
+paginates, and completes tasks. Submit an empty title to see form validation.
+The form uses `CreateTaskSchema`; the API uses the same schema through
+`ZodValidationPipe`. The typed HTTP client validates each response before the
+page receives it. The original `/api/status` endpoint remains unchanged.
+
+| Endpoint               | Contract                                     |
+| ---------------------- | -------------------------------------------- |
+| `POST /api/tasks`      | `CreateTaskSchema` → `TaskResponseSchema`    |
+| `PATCH /api/tasks/:id` | `UpdateTaskSchema` → `TaskResponseSchema`    |
+| `GET /api/tasks`       | `TaskQuerySchema` → `TaskListResponseSchema` |
+
+Task titles are trimmed and must contain 1–120 characters. Creation defaults
+`completed` to `false`. Updates accept either field without resetting omitted
+fields; empty updates and unknown fields are invalid. Task IDs are server UUIDs.
+Unknown task IDs return 404.
+
+`TaskQuerySchema` reuses the shared `QuerySchema` and `PaginationQuerySchema`:
+`page` defaults to 1, `pageSize` defaults to 10 (maximum 100), `sort` is `asc`
+or `desc` (default `asc`, by title), and `search` defaults to an empty string
+(maximum 120 characters, case-insensitive title match). Query strings accept
+positive integers, not blank values, fractions, or repeated parameters.
+
+Invalid bodies or queries return HTTP 400 with `ValidationErrorResponseSchema`.
+Field errors use arrays so callers can show more than one error per field;
+`formErrors` contains whole-object errors such as unknown fields or empty updates:
+
+```json
+{
+  "statusCode": 400,
+  "message": "Validation failed",
+  "fieldErrors": { "title": ["Enter a task title."] },
+  "formErrors": []
+}
+```
+
+The global exception filter adds `error`, `path`, and `timestamp` to this response.
+The shared schema accepts this metadata while preserving field and form errors.
+
+Tasks live only in API process memory. All visitors share the same demo data.
+Restarting the API clears every task; multiple API processes do not share data.
+There is no persistence, authentication, or per-user isolation.
+
+### Add a contract
+
+1. Define strict Zod objects in `libs/shared/schemas/src/lib` and export them
+   from the public index. Use `CreateXSchema`, `UpdateXSchema` (partial fields),
+   and `XResponseSchema`; export types with `z.infer<typeof Schema>`. Keep
+   creation defaults out of partial updates and required response fields.
+2. Extend `QuerySchema` for a domain's list query and define its list response.
+   Shared query coercion accepts HTTP strings; `z.infer` gives the parsed
+   numeric type. Parse before calling a typed client.
+3. Put API code in a `scope:api`, `type:feature` library. Apply
+   `new ZodValidationPipe(Schema)` to `@Body` or `@Query` and use the inferred
+   parameter and response types. Validate responses with the response schema.
+4. Put HTTP methods in a `scope:web`, `type:data-access` library. Accept the
+   inferred request types, fetch `unknown`, and parse response schemas. In a web
+   feature, use the request schema's `safeParse` before submission and display
+   its errors; parse API validation errors with `ValidationErrorResponseSchema`.
+5. Add schema edge cases, compiled HTTP tests, and typed client tests. Keep the
+   type-compatibility assertions beside each consumer and run `npm run check`.
+   A required schema field change makes outdated typed examples fail in both
+   consumers; update the API and web callers together.
+
 ## Structure
 
 ```text
@@ -131,13 +197,16 @@ apps/
   web/                         Angular standalone bootstrap
   api/                         NestJS bootstrap
 libs/
-  shared/schemas/               Zod schemas and inferred response types
+  shared/schemas/               Zod contracts and inferred types
   web/
     ui/                        Helm-style button using spartan BrnButton
     feature-status/            Status page
     data-access-status/        HTTP access and response validation
+    feature-tasks/             Task form and list
+    data-access-tasks/         Typed task HTTP access and response validation
   api/
     feature-status/            Status endpoint module
+    feature-tasks/             In-memory task endpoint module
     core/                      Global API configuration
 ```
 
@@ -190,12 +259,16 @@ npx nx graph
 npx nx graph --file=/tmp/workspace-graph.json
 ```
 
-The graph contains eight projects and these internal dependency edges:
+The graph contains eleven projects and these internal dependency edges:
 
 - `web` → `web-feature-status` → `web-ui`, `web-data-access-status`
 - `web-data-access-status` → `shared-schemas`
 - `api` → `api-feature-status`, `api-core`
 - `api-feature-status` → `shared-schemas`
+- `web` → `web-feature-tasks` → `web-ui`, `web-data-access-tasks`, `shared-schemas`
+- `web-data-access-tasks` → `shared-schemas`
+- `api` → `api-feature-tasks` → `api-core`, `shared-schemas`
+- `api-core` → `shared-schemas`
 
 The JSON export is useful in headless environments. Do not commit generated graphs.
 
@@ -208,7 +281,9 @@ npm run check
 Start PostgreSQL and configure `.env` before running these checks.
 This checks Prettier, lint, strict TypeScript (including Angular templates), schema
 tests, the compiled API over HTTP, module boundaries, and both production builds.
-The HTTP client test covers schema validation and backend errors.
+The HTTP client tests cover schema validation and backend errors. Task tests
+cover create/update/query validation, structured 400 errors, list behavior, and
+compile-time API/client contract compatibility.
 The API test builds first and uses a free port. Individual commands:
 
 ```bash

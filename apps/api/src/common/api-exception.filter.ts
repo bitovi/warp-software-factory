@@ -7,6 +7,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
+import { ValidationErrorResponseSchema } from '@wsf/shared/schemas';
 import { ZodValidationException } from 'nestjs-zod';
 import { ZodError } from 'zod';
 
@@ -48,12 +49,23 @@ export class ApiExceptionFilter implements ExceptionFilter {
       exception instanceof ZodValidationException
         ? exception.getZodError()
         : undefined;
+    const sharedValidation =
+      exception instanceof HttpException &&
+      statusCode === HttpStatus.BAD_REQUEST
+        ? ValidationErrorResponseSchema.safeParse(exception.getResponse())
+        : undefined;
     response.status(statusCode).json({
       statusCode,
       error,
       message,
       path: request.path,
       timestamp: new Date().toISOString(),
+      ...(sharedValidation?.success
+        ? {
+            fieldErrors: sharedValidation.data.fieldErrors,
+            formErrors: sharedValidation.data.formErrors,
+          }
+        : {}),
       ...(validationError instanceof ZodError
         ? {
             issues: validationError.issues.map((issue) => ({

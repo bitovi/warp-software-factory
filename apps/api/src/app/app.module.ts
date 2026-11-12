@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER, APP_PIPE } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { StatusModule } from '@wsf/api/feature-status';
+import { TasksModule } from '@wsf/api/feature-tasks';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { ApiExceptionFilter } from '../common/api-exception.filter';
 import { Environment, validateEnvironment } from '../config/environment';
@@ -12,6 +13,7 @@ import { HealthController } from '../health/health.controller';
 @Module({
   imports: [
     StatusModule,
+    TasksModule,
     ConfigModule.forRoot({
       isGlobal: true,
       cache: true,

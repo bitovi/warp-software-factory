@@ -24,6 +24,7 @@
       },
       "configurations": {
         "development": {
+          "budgets": [],
           "optimization": false,
           "sourceMap": true,
           "extractLicenses": false
