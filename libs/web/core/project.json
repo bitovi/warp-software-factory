@@ -1,0 +1,14 @@
+{
+  "name": "web-core",
+  "projectType": "library",
+  "sourceRoot": "libs/web/core/src",
+  "tags": ["scope:web", "type:util"],
+  "targets": {
+    "test": {
+      "command": "tsx --tsconfig tsconfig.base.json --test libs/web/core/src/lib/*.spec.ts"
+    },
+    "typecheck": {
+      "command": "ngc -p libs/web/core/tsconfig.lib.json --noEmit"
+    }
+  }
+}

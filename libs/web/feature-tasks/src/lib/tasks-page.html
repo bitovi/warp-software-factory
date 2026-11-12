@@ -26,7 +26,7 @@
       </div>
       <div id="title-errors" aria-live="polite" class="text-sm text-red-700">
         @for (error of fieldErrors()['title'] ?? []; track $index) {
-        <p>{{ error }}</p>
+          <p>{{ error }}</p>
         }
       </div>
     </form>
@@ -73,7 +73,7 @@
       class="mt-2 text-sm text-red-700"
     >
       @for (error of fieldErrors()['search'] ?? []; track $index) {
-      <p>{{ error }}</p>
+        <p>{{ error }}</p>
       }
     </div>
     <p role="status" class="my-4 text-sm text-slate-600">
@@ -81,23 +81,23 @@
     </p>
     <ul class="divide-y divide-border">
       @for (task of result().items; track task.id) {
-      <li class="flex items-center justify-between gap-4 py-3">
-        <span [class.line-through]="task.completed">{{ task.title }}</span>
-        <button
-          hlmBtn
-          type="button"
-          [disabled]="busy()"
-          [attr.aria-label]="
+        <li class="flex items-center justify-between gap-4 py-3">
+          <span [class.line-through]="task.completed">{{ task.title }}</span>
+          <button
+            hlmBtn
+            type="button"
+            [disabled]="busy()"
+            [attr.aria-label]="
               (task.completed ? 'Mark incomplete: ' : 'Complete: ') + task.title
             "
-          [attr.aria-pressed]="task.completed"
-          (click)="toggle(task)"
-        >
-          {{ task.completed ? 'Completed · undo' : 'Complete' }}
-        </button>
-      </li>
+            [attr.aria-pressed]="task.completed"
+            (click)="toggle(task)"
+          >
+            {{ task.completed ? 'Completed · undo' : 'Complete' }}
+          </button>
+        </li>
       } @empty {
-      <li class="py-4 text-sm text-slate-600">No tasks found.</li>
+        <li class="py-4 text-sm text-slate-600">No tasks found.</li>
       }
     </ul>
     <div class="mt-4 flex flex-wrap items-center justify-between gap-3">

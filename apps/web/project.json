@@ -24,6 +24,12 @@
       },
       "configurations": {
         "development": {
+          "fileReplacements": [
+            {
+              "replace": "apps/web/src/environments/environment.ts",
+              "with": "apps/web/src/environments/environment.development.ts"
+            }
+          ],
           "budgets": [],
           "optimization": false,
           "sourceMap": true,

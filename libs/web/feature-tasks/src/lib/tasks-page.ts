@@ -18,6 +18,7 @@ import {
   type TaskResponse,
 } from '@wsf/shared/schemas';
 import { TasksClient } from '@wsf/web/data-access-tasks';
+import { ApiRequestError } from '@wsf/web/core';
 import { HlmButton } from '@wsf/web/ui';
 import { finalize, switchMap, tap } from 'rxjs';
 import { z } from 'zod';
@@ -131,8 +132,9 @@ export class TasksPage {
   }
 
   private showError(error: unknown): void {
-    if (error instanceof HttpErrorResponse && error.status === 400) {
-      const parsed = ValidationErrorResponseSchema.safeParse(error.error);
+    const response = error instanceof ApiRequestError ? error.response : error;
+    if (response instanceof HttpErrorResponse && response.status === 400) {
+      const parsed = ValidationErrorResponseSchema.safeParse(response.error);
       if (parsed.success) {
         this.fieldErrors.set(parsed.data.fieldErrors);
         this.message.set(

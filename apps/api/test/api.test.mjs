@@ -42,6 +42,10 @@ test('serves shared status and task contracts under the API prefix', async (t) =
   assert.equal(response.status, 200);
   assert.deepEqual(await response.json(), { status: 'ok', service: 'api' });
   assert.equal((await fetch(`${url}/status`)).status, 404);
+  const health = await fetch(`${url}/api/health`);
+  assert.equal(health.status, 200);
+  assert.deepEqual(await health.json(), { status: 'ok', database: 'up' });
+  assert.equal((await fetch(`${url}/health`)).status, 404);
 
   const send = (path, method, body) =>
     fetch(`${url}/api${path}`, {

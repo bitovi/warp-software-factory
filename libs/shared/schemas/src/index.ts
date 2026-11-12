@@ -7,6 +7,13 @@ export const workspaceStatusSchema = z.strictObject({
 
 export type WorkspaceStatus = z.infer<typeof workspaceStatusSchema>;
 
+export const workspaceHealthSchema = z.object({
+  status: z.literal('ok'),
+  database: z.literal('up').optional(),
+});
+
+export type WorkspaceHealth = z.infer<typeof workspaceHealthSchema>;
+
 export * from './lib/query';
 export * from './lib/task';
 export * from './lib/validation-error';
