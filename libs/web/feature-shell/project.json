@@ -1,0 +1,11 @@
+{
+  "name": "web-feature-shell",
+  "projectType": "library",
+  "sourceRoot": "libs/web/feature-shell/src",
+  "tags": ["scope:web", "type:feature"],
+  "targets": {
+    "typecheck": {
+      "command": "ngc -p libs/web/feature-shell/tsconfig.lib.json --noEmit"
+    }
+  }
+}

@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { StatusPage } from '@wsf/web/feature-status';
+import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'wsf-root',
-  imports: [StatusPage],
-  template: '<wsf-status-page />',
+  imports: [RouterOutlet],
+  template: '<router-outlet />',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class App {}

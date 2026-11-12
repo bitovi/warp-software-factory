@@ -19,6 +19,8 @@
     "paths": {
       "@wsf/shared/schemas": ["libs/shared/schemas/src/index.ts"],
       "@wsf/web/ui": ["libs/web/ui/src/index.ts"],
+      "@wsf/web/core": ["libs/web/core/src/index.ts"],
+      "@wsf/web/feature-shell": ["libs/web/feature-shell/src/index.ts"],
       "@wsf/web/feature-status": ["libs/web/feature-status/src/index.ts"],
       "@wsf/web/data-access-status": [
         "libs/web/data-access-status/src/index.ts"

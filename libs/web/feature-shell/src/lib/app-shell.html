@@ -1,0 +1,70 @@
+<a
+  href="#main-content"
+  class="skip-link"
+  (click)="$event.preventDefault(); mainContent.focus()"
+  >Skip to content</a
+>
+<div class="workspace-shell">
+  <aside
+    class="sidebar"
+    [class.nav-open]="menuOpen()"
+    id="workspace-navigation"
+  >
+    <a
+      routerLink="/"
+      class="brand"
+      (click)="menuOpen.set(false)"
+      aria-label="Workspace overview"
+    >
+      <span class="brand-mark" aria-hidden="true">w.</span>
+      <span>Workspace<span class="brand-caption">SOFTWARE FACTORY</span></span>
+    </a>
+    <p class="nav-caption">YOUR WORKSPACE</p>
+    <nav aria-label="Main navigation">
+      @for (item of navigation; track item.path) {
+        <a
+          [routerLink]="item.path"
+          routerLinkActive="nav-active"
+          [routerLinkActiveOptions]="{ exact: item.path === '/' }"
+          ariaCurrentWhenActive="page"
+          (click)="menuOpen.set(false)"
+          class="nav-link"
+        >
+          <span class="nav-number" aria-hidden="true">{{ item.number }}</span>
+          {{ item.label }}
+        </a>
+      }
+    </nav>
+    <div class="sidebar-note">
+      <span class="note-dot" aria-hidden="true"></span>
+      Built on a shared foundation
+      <p>Small features. Clear boundaries.</p>
+    </div>
+  </aside>
+  <header class="topbar">
+    <div class="flex items-center gap-4">
+      <button
+        hlmBtn
+        type="button"
+        class="menu-toggle"
+        aria-controls="workspace-navigation"
+        [attr.aria-expanded]="menuOpen()"
+        (click)="menuOpen.set(!menuOpen())"
+      >
+        Menu
+      </button>
+      <span class="text-sm font-medium text-muted-foreground"
+        >Workspace
+        <span class="mx-2 text-border" aria-hidden="true">/</span> Developer
+        foundation</span
+      >
+    </div>
+    <span
+      class="rounded-full border border-border bg-background px-3 py-1 text-xs font-medium text-muted-foreground"
+      >Development</span
+    >
+  </header>
+  <main id="main-content" tabindex="-1" #mainContent class="content">
+    <router-outlet (activate)="focusContent(mainContent)" />
+  </main>
+</div>
