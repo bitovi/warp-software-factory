@@ -1,0 +1,129 @@
+<section aria-labelledby="tasks-heading" class="mx-auto mb-16 max-w-3xl px-6">
+  <div class="rounded-xl border border-border bg-white p-6 shadow-sm">
+    <h2 id="tasks-heading" class="text-xl font-semibold">
+      Shared contract demo
+    </h2>
+    <p class="mt-2 mb-6 text-sm text-slate-600">
+      Create and complete tasks using the same Zod contract in the form and API.
+      Demo data is shared by all visitors and disappears when the API restarts.
+    </p>
+
+    <form novalidate (ngSubmit)="create()" class="space-y-3">
+      <label for="task-title" class="block text-sm font-semibold"
+        >Task title</label
+      >
+      <div class="flex flex-wrap gap-3">
+        <input
+          id="task-title"
+          name="title"
+          [(ngModel)]="title"
+          [disabled]="busy()"
+          [attr.aria-invalid]="!!fieldErrors()['title']"
+          aria-describedby="title-errors"
+          class="min-w-0 flex-1 rounded-md border border-border px-3 py-2"
+        />
+        <button hlmBtn type="submit" [disabled]="busy()">Create task</button>
+      </div>
+      <div id="title-errors" aria-live="polite" class="text-sm text-red-700">
+        @for (error of fieldErrors()['title'] ?? []; track $index) {
+          <p>{{ error }}</p>
+        }
+      </div>
+    </form>
+
+    <form
+      novalidate
+      (ngSubmit)="load()"
+      class="mt-6 flex flex-wrap items-end gap-3"
+    >
+      <div class="min-w-0 flex-1">
+        <label for="task-search" class="mb-2 block text-sm font-semibold">
+          Search tasks
+        </label>
+        <input
+          id="task-search"
+          name="search"
+          [(ngModel)]="search"
+          [disabled]="busy()"
+          [attr.aria-invalid]="!!fieldErrors()['search']"
+          aria-describedby="search-errors"
+          class="w-full rounded-md border border-border px-3 py-2"
+        />
+      </div>
+      <div>
+        <label for="task-sort" class="mb-2 block text-sm font-semibold">
+          Title order
+        </label>
+        <select
+          id="task-sort"
+          name="sort"
+          [(ngModel)]="sort"
+          [disabled]="busy()"
+          class="rounded-md border border-border px-3 py-2"
+        >
+          <option value="asc">A–Z</option>
+          <option value="desc">Z–A</option>
+        </select>
+      </div>
+      <button hlmBtn type="submit" [disabled]="busy()">Search / refresh</button>
+    </form>
+    <div
+      id="search-errors"
+      aria-live="polite"
+      class="mt-2 text-sm text-red-700"
+    >
+      @for (error of fieldErrors()['search'] ?? []; track $index) {
+        <p>{{ error }}</p>
+      }
+    </div>
+    <p role="status" class="my-4 text-sm text-slate-600">
+      {{ busy() ? 'Loading…' : message() }}
+    </p>
+    <ul class="divide-y divide-border">
+      @for (task of result().items; track task.id) {
+        <li class="flex items-center justify-between gap-4 py-3">
+          <span [class.line-through]="task.completed">{{ task.title }}</span>
+          <button
+            hlmBtn
+            type="button"
+            [disabled]="busy()"
+            [attr.aria-label]="
+              (task.completed ? 'Mark incomplete: ' : 'Complete: ') + task.title
+            "
+            [attr.aria-pressed]="task.completed"
+            (click)="toggle(task)"
+          >
+            {{ task.completed ? 'Completed · undo' : 'Complete' }}
+          </button>
+        </li>
+      } @empty {
+        <li class="py-4 text-sm text-slate-600">No tasks found.</li>
+      }
+    </ul>
+    <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
+      <p class="text-sm text-slate-600">
+        {{ result().total }} task(s) · Page {{ result().page }}
+      </p>
+      <div class="flex gap-2">
+        <button
+          hlmBtn
+          type="button"
+          [disabled]="busy() || result().page <= 1"
+          (click)="load(result().page - 1)"
+        >
+          Previous
+        </button>
+        <button
+          hlmBtn
+          type="button"
+          [disabled]="
+            busy() || result().page * result().pageSize >= result().total
+          "
+          (click)="load(result().page + 1)"
+        >
+          Next
+        </button>
+      </div>
+    </div>
+  </div>
+</section>

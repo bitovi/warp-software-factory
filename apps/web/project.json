@@ -30,6 +30,7 @@
               "with": "apps/web/src/environments/environment.development.ts"
             }
           ],
+          "budgets": [],
           "optimization": false,
           "sourceMap": true,
           "extractLicenses": false

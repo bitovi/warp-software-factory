@@ -3,7 +3,6 @@ import {
   workspaceStatusSchema,
   type WorkspaceStatus,
 } from '@wsf/shared/schemas';
-import { HealthController } from './health.controller';
 
 @Controller('status')
 class StatusController {
@@ -13,5 +12,5 @@ class StatusController {
   }
 }
 
-@Module({ controllers: [StatusController, HealthController] })
+@Module({ controllers: [StatusController] })
 export class StatusModule {}

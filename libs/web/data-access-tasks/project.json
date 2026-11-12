@@ -1,0 +1,14 @@
+{
+  "name": "web-data-access-tasks",
+  "projectType": "library",
+  "sourceRoot": "libs/web/data-access-tasks/src",
+  "tags": ["scope:web", "type:data-access"],
+  "targets": {
+    "test": {
+      "command": "tsx --tsconfig tsconfig.base.json --test libs/web/data-access-tasks/src/lib/tasks-client.spec.ts"
+    },
+    "typecheck": {
+      "command": "ngc -p libs/web/data-access-tasks/tsconfig.lib.json --noEmit"
+    }
+  }
+}
