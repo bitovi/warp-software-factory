@@ -75,6 +75,11 @@ The API exposes `GET http://localhost:3000/api/status`:
 The overview displays database readiness from the API health response.
 The existing `/api/status` contract and client remain available.
 
+Open `/signup` to create an account and sign in, or `/login` for an existing
+account. Protected pages redirect signed-out users to login and preserve the
+internal destination through signup or login. The shell shows the active company
+and a **Sign out** button.
+
 These are development servers. Production hosting and a production `/api` reverse
 proxy are not configured. Authenticated browser sessions need HTTPS because
 refresh cookies are always Secure.
@@ -215,9 +220,17 @@ opts out; `@CurrentUser()` supplies validated identity claims. Only signup,
 login, refresh, logout, health, and status are public. Public refresh/logout still
 require the refresh cookie to change a session; missing-cookie logout is idempotent.
 Existing demo task endpoints now require a bearer token. The Angular demo clients
-do not implement login or token attachment yet and show their existing error
-states for 401 responses. Health/status remain usable without login. No task
-endpoint is exempted to keep the demo working.
+attach the in-memory access token only to canonical `/api` requests. Concurrent
+401 responses share one refresh and retry once; a failed refresh or repeated 401
+clears the session. Cookie writes serialize so a pending login or refresh cannot
+restore a signed-out session. Health/status remain public.
+
+The root `AuthStore` keeps the user, active company, memberships, and session
+status in signals. Startup attempts a silent refresh and loads `/api/auth/me`;
+route guards wait for that initialization. Signup creates the account, then logs
+in through the existing session endpoint. Tokens never enter persistent browser
+storage. Refresh serialization is within one running app instance, not across
+browser tabs.
 
 ## Shared contracts
 
@@ -302,6 +315,8 @@ libs/
     data-access-status/        Validated clients and example Signal Store
     feature-tasks/             Task form and list
     data-access-tasks/         Typed task HTTP access and response validation
+    feature-auth/             Login/signup forms, route guards and startup setup
+    data-access-auth/         Auth Signal Store, validated client and token interceptor
   api/
     feature-auth/              Sign-up, login, sessions and global auth guard
     feature-status/            Status endpoint module
@@ -337,9 +352,10 @@ values, never secrets. A separate origin must allow the web origin through CORS.
 Production needs a host that serves the SPA for feature URLs and proxies `/api`
 when using the default. Changing the API port also requires a matching dev proxy.
 
-Clients use canonical `/api/...` paths. `provideHttpClient` registers the error
-interceptor before the base-URL interceptor so errors are classified using the
-canonical path. The base-URL interceptor rewrites only `/api` and `/api/` paths;
+Clients use canonical `/api/...` paths. `provideAuth` registers the error
+interceptor, auth interceptor, and base-URL interceptor in that order so auth
+recovery sees HTTP errors before error classification and URL rewriting.
+The base-URL interceptor rewrites only `/api` and `/api/` paths;
 assets and third-party URLs are unchanged. HTTP failures become `ApiRequestError`
 with a safe message and the original response/cause. Feature stores decide how
 to render errors. Schema failures remain distinct from HTTP failures.
@@ -434,6 +450,10 @@ Client/store tests cover schema validation, loading, overlapping requests, error
 retry, stale-data removal, and teardown. Interceptor tests cover URL scoping and
 safe error propagation. The compiled API test exercises status and health over HTTP.
 Shell DOM tests cover menu tab order and focus after route and same-route activation.
+Auth HTTP-chain tests cover single-flight refresh, delayed 401 responses, bounded
+retries, stale-session responses, logout races, and token scoping. Auth DOM and
+router tests cover shared-schema validation, safe errors, internal return URLs,
+and initialization-aware guards.
 The HTTP client tests cover schema validation and backend errors. Task tests
 cover create/update/query validation, structured 400 errors, list behavior, and
 compile-time API/client contract compatibility.
