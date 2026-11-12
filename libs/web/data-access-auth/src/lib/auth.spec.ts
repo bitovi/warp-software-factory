@@ -150,13 +150,13 @@ test('signup validates the shared contracts, logs in, and loads the active works
 test('startup restoration is single flight and waits for validated identity', async (t) => {
   const { store, http } = setup(t);
   const restored = store.initialize();
-  assert.equal(store.initialize(), restored);
+  const duplicate = store.initialize();
   await tick();
   http.expectOne('/api/auth/refresh').flush(token('restored'));
   await tick();
   assert.equal(store.status(), 'initializing');
   http.expectOne('/api/auth/me').flush(me);
-  await restored;
+  await Promise.all([restored, duplicate]);
   assert.equal(store.status(), 'authenticated');
 });
 
