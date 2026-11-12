@@ -10,13 +10,14 @@ import { ApiExceptionFilter } from '../common/api-exception.filter';
 import { Environment, validateEnvironment } from '../config/environment';
 import { databaseOptions } from '../database-options';
 import { TypeOrmSignupStore } from '../database/typeorm-signup.store';
+import { TypeOrmAuthStore } from '../database/typeorm-auth.store';
 import { HealthController } from '../health/health.controller';
 
 @Module({
   imports: [
     StatusModule,
     TasksModule,
-    AuthModule.register(TypeOrmSignupStore),
+    AuthModule.register(TypeOrmSignupStore, TypeOrmAuthStore),
     ConfigModule.forRoot({
       isGlobal: true,
       cache: true,
@@ -26,8 +27,6 @@ import { HealthController } from '../health/health.controller';
       inject: [ConfigService],
       useFactory: (config: ConfigService<Environment, true>) => ({
         ...databaseOptions({
-          NODE_ENV: config.get('NODE_ENV', { infer: true }),
-          PORT: config.get('PORT', { infer: true }),
           DB_HOST: config.get('DB_HOST', { infer: true }),
           DB_PORT: config.get('DB_PORT', { infer: true }),
           DB_NAME: config.get('DB_NAME', { infer: true }),

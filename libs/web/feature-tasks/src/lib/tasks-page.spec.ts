@@ -54,3 +54,35 @@ test('preserves structured validation errors wrapped by the API interceptor', ()
     injector.destroy();
   }
 });
+
+test('shows a safe error and stops loading when the task API requires login', () => {
+  const injector = Injector.create({
+    providers: [
+      {
+        provide: TasksClient,
+        useValue: {
+          list: () =>
+            throwError(
+              () =>
+                new ApiRequestError(
+                  new HttpErrorResponse({
+                    status: 401,
+                    error: { message: 'private server details' },
+                  }),
+                ),
+            ),
+        },
+      },
+    ],
+  });
+  try {
+    const page = runInInjectionContext(injector, () => new TasksPageState());
+    assert.deepEqual(page.snapshot(), {
+      fieldErrors: {},
+      message: 'Could not load or save tasks. Check the API and retry.',
+      busy: false,
+    });
+  } finally {
+    injector.destroy();
+  }
+});

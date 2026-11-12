@@ -15,6 +15,7 @@ export const workspaceHealthSchema = z.object({
 export type WorkspaceHealth = z.infer<typeof workspaceHealthSchema>;
 
 export * from './lib/query';
+export * from './lib/auth';
 export * from './lib/signup';
 export * from './lib/task';
 export * from './lib/validation-error';

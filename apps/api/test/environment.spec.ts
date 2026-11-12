@@ -1,10 +1,13 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { describe, it } from 'node:test';
+import { randomBytes } from 'node:crypto';
 import { validateEnvironment } from '../src/config/environment';
 import { databaseOptions } from '../src/database-options';
 
 const required = {
+  JWT_ACCESS_SECRET: randomBytes(48).toString('base64url'),
+  AUTH_ORIGIN: 'https://app.example.test',
   DB_HOST: ' localhost ',
   DB_NAME: ' api_test ',
   DB_USER: ' api ',
@@ -18,6 +21,8 @@ describe('environment validation', () => {
       {
         NODE_ENV: 'development',
         PORT: 3000,
+        JWT_ACCESS_SECRET: required.JWT_ACCESS_SECRET,
+        AUTH_ORIGIN: required.AUTH_ORIGIN,
         DB_HOST: 'localhost',
         DB_PORT: 5432,
         DB_NAME: 'api_test',
@@ -25,6 +30,23 @@ describe('environment validation', () => {
         DB_PASSWORD: required.DB_PASSWORD,
         DB_SSL: false,
       },
+    );
+  });
+
+  it('requires nonblank signing secrets and an HTTPS browser origin in production', () => {
+    assert.throws(
+      () =>
+        validateEnvironment({ ...required, JWT_ACCESS_SECRET: ' '.repeat(64) }),
+      /JWT_ACCESS_SECRET/,
+    );
+    assert.throws(
+      () =>
+        validateEnvironment({
+          ...required,
+          NODE_ENV: 'production',
+          AUTH_ORIGIN: 'http://app.example.test',
+        }),
+      /AUTH_ORIGIN/,
     );
   });
 
@@ -56,7 +78,14 @@ describe('environment validation', () => {
         }),
       (error: unknown) => {
         assert.ok(error instanceof Error);
-        for (const name of ['DB_HOST', 'DB_NAME', 'DB_USER', 'DB_PASSWORD']) {
+        for (const name of [
+          'DB_HOST',
+          'DB_NAME',
+          'DB_USER',
+          'DB_PASSWORD',
+          'JWT_ACCESS_SECRET',
+          'AUTH_ORIGIN',
+        ]) {
           assert.match(error.message, new RegExp(name));
         }
         return true;
@@ -85,6 +114,9 @@ describe('environment validation', () => {
     for (const [key, value] of [
       ['NODE_ENV', 'private-input'],
       ['DB_SSL', 'private-input'],
+      ['JWT_ACCESS_SECRET', 'private-input'],
+      ['AUTH_ORIGIN', 'private-input'],
+      ['AUTH_ORIGIN', 'https://app.example.test/private-input'],
     ] as const) {
       assert.throws(
         () => validateEnvironment({ ...required, [key]: value }),

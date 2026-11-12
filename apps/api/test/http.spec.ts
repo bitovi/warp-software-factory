@@ -10,6 +10,10 @@ import {
   Post,
 } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
+import { JwtService } from '@nestjs/jwt';
+import { Public } from '@wsf/api/core';
+import { AuthStore } from '@wsf/api/feature-auth';
+import { randomBytes, randomUUID } from 'node:crypto';
 import { ValidationErrorResponseSchema } from '@wsf/shared/schemas';
 import { NextFunction, Request, Response } from 'express';
 import { createZodDto } from 'nestjs-zod';
@@ -23,6 +27,7 @@ class InputDto extends createZodDto(
 ) {}
 
 @Controller('validation')
+@Public()
 class ValidationController {
   @Post()
   create(@Body() body: InputDto): InputDto {
@@ -47,6 +52,7 @@ class ValidationController {
 describe('global HTTP behavior', () => {
   let app: INestApplication;
   const query = mock.fn(async () => [{ result: 1 }]);
+  let accessToken: string;
 
   before(async () => {
     Object.assign(process.env, {
@@ -54,6 +60,8 @@ describe('global HTTP behavior', () => {
       DB_NAME: 'api_test',
       DB_USER: 'api',
       DB_PASSWORD: 'test-only',
+      JWT_ACCESS_SECRET: randomBytes(48).toString('base64url'),
+      AUTH_ORIGIN: 'https://app.example.test',
     });
     const { AppModule } = await import('../src/app/app.module');
     const module = await Test.createTestingModule({
@@ -62,7 +70,15 @@ describe('global HTTP behavior', () => {
     })
       .overrideProvider(DataSource)
       .useValue({ query, isInitialized: false })
+      .overrideProvider(AuthStore)
+      .useValue({ currentUser: async () => ({}) })
       .compile();
+    accessToken = await module.get(JwtService).signAsync({
+      sub: randomUUID(),
+      companyId: randomUUID(),
+      membershipId: randomUUID(),
+      sid: randomUUID(),
+    });
     app = module.createNestApplication(new ApiExpressAdapter(), {
       logger: false,
     });
@@ -116,6 +132,7 @@ describe('global HTTP behavior', () => {
   it('preserves shared field and form errors inside the global envelope', async () => {
     const response = await request(app.getHttpServer())
       .post('/api/tasks')
+      .auth(accessToken, { type: 'bearer' })
       .send({ title: ' ', completed: 'private-input' })
       .expect(400);
     const validation = ValidationErrorResponseSchema.parse(response.body);
@@ -129,6 +146,7 @@ describe('global HTTP behavior', () => {
 
     const emptyUpdate = await request(app.getHttpServer())
       .patch('/api/tasks/738dbdca-09d8-47d9-af39-3fb3663fd71c')
+      .auth(accessToken, { type: 'bearer' })
       .send({})
       .expect(400);
     const formValidation = ValidationErrorResponseSchema.parse(

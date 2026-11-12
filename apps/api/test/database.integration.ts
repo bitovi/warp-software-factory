@@ -19,6 +19,8 @@ import { Company } from '../src/database/entities/company.entity';
 import { EmailVerificationRequest } from '../src/database/entities/email-verification-request.entity';
 import { Membership } from '../src/database/entities/membership.entity';
 import { User } from '../src/database/entities/user.entity';
+import { AuthSession } from '../src/database/entities/auth-session.entity';
+import { RefreshToken } from '../src/database/entities/refresh-token.entity';
 
 @Entity({ name: 'base_entity_probe', schema: 'app' })
 class EntityProbe extends BaseEntity {
@@ -67,6 +69,8 @@ describe('PostgreSQL API', () => {
         Company,
         Membership,
         EmailVerificationRequest,
+        AuthSession,
+        RefreshToken,
       ],
     });
     await dataSource.initialize();
@@ -85,13 +89,14 @@ describe('PostgreSQL API', () => {
       if (ownsMigrations) {
         await dataSource.undoLastMigration();
         await dataSource.undoLastMigration();
+        await dataSource.undoLastMigration();
       }
       await dataSource.destroy();
     }
   });
 
   it('runs, reverts, and reapplies all migrations', async () => {
-    assert.equal((await dataSource.runMigrations()).length, 2);
+    assert.equal((await dataSource.runMigrations()).length, 3);
     ownsMigrations = true;
     assert.deepEqual(
       await dataSource.query(
@@ -100,6 +105,8 @@ describe('PostgreSQL API', () => {
       [{ schema_name: 'app' }],
     );
     assert.equal((await dataSource.runMigrations()).length, 0);
+    await dataSource.undoLastMigration();
+    assert.equal(await dataSource.getRepository(User).count(), 0);
     await dataSource.undoLastMigration();
     assert.deepEqual(
       await dataSource.query(
@@ -114,7 +121,7 @@ describe('PostgreSQL API', () => {
       ),
       [],
     );
-    assert.equal((await dataSource.runMigrations()).length, 2);
+    assert.equal((await dataSource.runMigrations()).length, 3);
   });
 
   it('persists UUIDs and timezone-aware creation and update timestamps', async () => {
