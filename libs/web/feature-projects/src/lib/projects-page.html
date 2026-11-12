@@ -1,0 +1,782 @@
+<a
+  class="skip-link"
+  href="#main-content"
+  (click)="$event.preventDefault(); mainContent.focus()"
+  >Skip to content</a
+>
+<div class="workspace">
+  <aside class="sidebar" aria-label="Workspace">
+    <a href="#/projects" class="brand"
+      ><span class="brand-mark">w<span>↗</span></span> workstream<span
+        class="brand-dot"
+        >.</span
+      ></a
+    >
+    <div class="workspace-name">
+      <span class="workspace-avatar">B</span>
+      <div>Bitovi workspace<small>Team workspace</small></div>
+      <span class="chevron">⌄</span>
+    </div>
+    <p class="nav-label">WORKSPACE</p>
+    <nav aria-label="Main navigation">
+      <a href="#/projects" [class.nav-active]="route().startsWith('/projects')"
+        ><span aria-hidden="true">▦</span> Projects
+        <span class="nav-count">{{ scoped().length }}</span></a
+      >
+      <a href="#/timesheet" [class.nav-active]="route() === '/timesheet'"
+        ><span aria-hidden="true">◷</span> Timesheet demo</a
+      >
+      <a href="#/status" [class.nav-active]="route() === '/status'"
+        ><span aria-hidden="true">⌁</span> API connection</a
+      >
+    </nav>
+    <div class="sidebar-note">
+      <span class="note-symbol">✧</span
+      ><strong>A little more organized.</strong>
+      <p>A shared space for your projects, people and progress.</p>
+    </div>
+    <div class="sidebar-footer">
+      <span class="avatar"> {{ manager() ? 'EC' : 'DE' }} </span>
+      <div>
+        {{ personName(viewer().id)
+        }}<small>{{ manager() ? 'Manager' : 'Employee · read-only' }}</small>
+      </div>
+    </div>
+  </aside>
+  <div class="main-area">
+    <header class="topbar">
+      <div class="breadcrumb">
+        Workspace <span>/</span>
+        <strong>{{
+          route() === '/timesheet'
+            ? 'Timesheet demo'
+            : route() === '/status'
+              ? 'API connection'
+              : 'Projects'
+        }}</strong>
+      </div>
+      <span class="workspace-state"
+        ><i></i> All changes stay in this session</span
+      >
+    </header>
+    <div class="demo-banner">
+      <span class="demo-tag">DEMO</span>
+      <p>
+        Sample data · no server authorization or persistence. Reload resets
+        changes.
+      </p>
+      <label
+        >Demo viewer
+        <select
+          [value]="viewer().id"
+          (change)="changeViewer($any($event.target).value)"
+        >
+          <option value="emily">Emily · Manager</option>
+          <option value="mia">Mia · Employee</option>
+          <option value="jordan">Jordan · Employee</option>
+          <option value="alex">Alex · Employee</option>
+        </select></label
+      >
+    </div>
+    <main #mainContent id="main-content" tabindex="-1">
+      <p class="notice" role="status" aria-live="polite">{{ notice() }}</p>
+      @if (error()) {
+        <p class="error-banner" role="alert">{{ error() }}</p>
+      }
+      @if (route() === '/status') {
+        <wsf-status-page />
+      } @else if (route() === '/timesheet') {
+        <div class="page-heading">
+          <div>
+            <p class="eyebrow">CONNECT THE DOTS</p>
+            <h1>Timesheet picker</h1>
+            <p>A focused preview of the project-to-timesheet connection.</p>
+          </div>
+          <span class="badge neutral">Demo integration</span>
+        </div>
+        <section class="panel picker-panel" aria-labelledby="picker-title">
+          <div class="panel-icon" aria-hidden="true">◷</div>
+          <h2 id="picker-title">What are you working on?</h2>
+          <p>
+            Only active, unarchived projects assigned to
+            {{ personName(viewer().id) }} are eligible.
+          </p>
+          <label class="field-label" for="timesheet-project">Project</label>
+          <select
+            id="timesheet-project"
+            [value]="pickerProject()?.id ?? ''"
+            (change)="pickerId.set($any($event.target).value)"
+          >
+            <option value="">Choose a project</option>
+            @for (project of eligible(); track project.id) {
+              <option [value]="project.id">
+                {{ project.code }} · {{ project.name }}
+              </option>
+            }
+          </select>
+          @if (pickerProject(); as project) {
+            <div class="picker-preview">
+              <span class="project-icon" [style.background]="project.color">{{
+                project.code.slice(0, 2)
+              }}</span>
+              <div>
+                <strong>{{ project.name }}</strong>
+                <p>
+                  {{ clientName(project.clientId) }} ·
+                  {{ project.billable ? 'Billable' : 'Non-billable' }}
+                </p>
+              </div>
+              <a [href]="'#/projects/' + project.id">View project ↗</a>
+            </div>
+          }
+          @if (!eligible().length) {
+            <p class="empty-copy">
+              No eligible projects. Ask a manager to assign an active project.
+            </p>
+          }
+          <div class="integration-note">
+            <strong>Project selection only</strong>
+            <p>
+              This demo uses the same eligibility selector as Projects. Saving
+              time, approvals and a production timesheet are not implemented.
+            </p>
+          </div>
+        </section>
+      } @else if (route().startsWith('/projects/')) {
+        @if (selected(); as project) {
+          <a class="back-link" href="#/projects">← All projects</a>
+          <div class="page-heading detail-heading">
+            <div class="detail-title">
+              <span
+                class="project-icon large"
+                [style.background]="project.color"
+                >{{ project.code.slice(0, 2) }}</span
+              >
+              <div>
+                <p class="eyebrow">
+                  {{ project.code }}
+                  <span> / {{ clientName(project.clientId) }}</span>
+                </p>
+                <h1>{{ project.name }}</h1>
+                <p>
+                  {{
+                    project.billable
+                      ? 'Billable project'
+                      : 'Non-billable project'
+                  }}
+                  · {{ project.memberIds.length }} members
+                </p>
+              </div>
+            </div>
+            <div class="heading-actions">
+              <span
+                class="badge"
+                [class]="
+                  'badge ' + (project.archived ? 'neutral' : project.status)
+                "
+                >{{ statusName(project) }}</span
+              >
+              @if (manager() && !project.archived) {
+                <button class="secondary" (click)="openForm(project)">
+                  Edit project
+                </button>
+              }
+            </div>
+          </div>
+          @if (!manager()) {
+            <div class="readonly-note">
+              Read-only access · You can view projects you are assigned to. Only
+              managers can make changes.
+            </div>
+          }
+          @if (project.archived) {
+            <div class="readonly-note">
+              This project is archived. Restore it to change details or
+              assignments.
+            </div>
+          }
+          <nav class="detail-tabs" aria-label="Project sections">
+            @for (item of tabs; track item) {
+              <button
+                [class.selected-tab]="tab() === item"
+                [attr.aria-current]="tab() === item ? 'page' : null"
+                (click)="tab.set(item)"
+              >
+                {{ item }}
+                @if (item === 'Members') {
+                  <span>{{ project.memberIds.length }}</span>
+                }
+                @if (item === 'Services') {
+                  <span>{{ project.serviceIds.length }}</span>
+                }
+              </button>
+            }
+          </nav>
+          @if (tab() === 'Overview') {
+            <div class="metric-grid detail-metrics">
+              <section class="metric">
+                <p>Hours this week</p>
+                <strong
+                  >{{ metrics(project).week | number: '1.0-2'
+                  }}<small> h</small></strong
+                ><span>Monday through today</span>
+              </section>
+              <section class="metric">
+                <p>Hours this month</p>
+                <strong
+                  >{{ metrics(project).month | number: '1.0-2'
+                  }}<small> h</small></strong
+                ><span>Month to date</span>
+              </section>
+              <section class="metric">
+                <p>Total hours</p>
+                <strong
+                  >{{ metrics(project).hours | number: '1.0-2'
+                  }}<small> h</small></strong
+                ><span>All recorded time</span>
+              </section>
+            </div>
+            <div class="overview-grid">
+              <section class="panel budget-panel">
+                <div class="panel-heading">
+                  <h2>Budget overview</h2>
+                  <span class="badge neutral">Hours</span>
+                </div>
+                @if (project.budget !== null) {
+                  <div class="budget-big">
+                    {{ metrics(project).hours | number: '1.0-2'
+                    }}<span> / {{ project.budget | number }} h</span>
+                  </div>
+                  <progress
+                    [value]="clamp(metrics(project).percent ?? 0)"
+                    max="100"
+                    aria-label="Project budget used"
+                  ></progress>
+                  <div class="budget-caption">
+                    <span
+                      >{{ metrics(project).percent | number: '1.0-1' }}%
+                      used</span
+                    ><strong
+                      [class.over-budget]="
+                        (metrics(project).remaining ?? 0) < 0
+                      "
+                      >{{ metrics(project).remaining | number: '1.0-2' }} h
+                      remaining</strong
+                    >
+                  </div>
+                } @else {
+                  <div class="budget-big">No limit</div>
+                  <p>This project does not have an hours budget.</p>
+                }
+                <p class="subtle">
+                  Based on recorded time across the whole project.
+                </p>
+              </section>
+              <section class="panel">
+                <h2>Project details</h2>
+                <dl class="details-list">
+                  <div>
+                    <dt>Client</dt>
+                    <dd>{{ clientName(project.clientId) }}</dd>
+                  </div>
+                  <div>
+                    <dt>Start date</dt>
+                    <dd>
+                      {{
+                        project.startDate
+                          ? (project.startDate | date: 'mediumDate' : 'UTC')
+                          : 'Not set'
+                      }}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>End date</dt>
+                    <dd>
+                      {{
+                        project.endDate
+                          ? (project.endDate | date: 'mediumDate' : 'UTC')
+                          : 'Not set'
+                      }}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Hourly rate</dt>
+                    <dd>
+                      {{
+                        project.billable
+                          ? (project.rate | currency: 'USD') + ' / h'
+                          : 'Non-billable'
+                      }}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Status</dt>
+                    <dd>
+                      @if (manager() && !project.archived) {
+                        <select
+                          aria-label="Project status"
+                          [value]="project.status"
+                          (change)="
+                            changeStatus(project, $any($event.target).value)
+                          "
+                        >
+                          <option value="active">Active</option>
+                          <option value="on-hold">On hold</option>
+                          <option value="completed">Completed</option>
+                        </select>
+                      } @else {
+                        {{ statusName(project) }}
+                      }
+                    </dd>
+                  </div>
+                </dl>
+              </section>
+            </div>
+          } @else if (tab() === 'Members') {
+            <section class="panel">
+              <div class="panel-heading">
+                <div>
+                  <h2>Project members</h2>
+                  <p>
+                    {{
+                      manager() && !project.archived
+                        ? 'Select members. Changes apply
+              immediately for this session.'
+                        : 'People assigned to this
+              project.'
+                    }}
+                  </p>
+                </div>
+                <span class="badge neutral"
+                  >{{ project.memberIds.length }} assigned</span
+                >
+              </div>
+              <div class="assignment-list">
+                @for (person of repository.people; track person.id) {
+                  @if (
+                    (manager() && !project.archived) ||
+                    project.memberIds.includes(person.id)
+                  ) {
+                    <div class="assignment-row">
+                      <span class="avatar light">{{ person.initials }}</span>
+                      <div>
+                        <strong>{{ person.name }}</strong>
+                        <p>{{ person.title }}</p>
+                      </div>
+                      @if (manager() && !project.archived) {
+                        <label class="assign-check"
+                          ><input
+                            type="checkbox"
+                            [checked]="project.memberIds.includes(person.id)"
+                            (change)="
+                              assign(
+                                project,
+                                'memberIds',
+                                person.id,
+                                $any($event.target).checked
+                              )
+                            "
+                          />
+                          Assign {{ person.name }}</label
+                        >
+                      } @else {
+                        <span class="badge neutral">Member</span>
+                      }
+                    </div>
+                  }
+                }
+              </div>
+              @if (!project.memberIds.length) {
+                <p class="empty-copy">No members assigned.</p>
+              }
+            </section>
+          } @else if (tab() === 'Services') {
+            <section class="panel">
+              <div class="panel-heading">
+                <div>
+                  <h2>Project services</h2>
+                  <p>
+                    {{
+                      manager() && !project.archived
+                        ? 'Choose the services available
+              on this project.'
+                        : 'Services assigned to this project.'
+                    }}
+                  </p>
+                </div>
+                <span class="badge neutral"
+                  >{{ project.serviceIds.length }} assigned</span
+                >
+              </div>
+              <div class="assignment-list">
+                @for (service of repository.services; track service.id) {
+                  @if (
+                    (manager() && !project.archived) ||
+                    project.serviceIds.includes(service.id)
+                  ) {
+                    <div class="assignment-row">
+                      <span class="service-icon" aria-hidden="true">◇</span
+                      ><strong>{{ service.name }}</strong>
+                      @if (manager() && !project.archived) {
+                        <label class="assign-check"
+                          ><input
+                            type="checkbox"
+                            [checked]="project.serviceIds.includes(service.id)"
+                            (change)="
+                              assign(
+                                project,
+                                'serviceIds',
+                                service.id,
+                                $any($event.target).checked
+                              )
+                            "
+                          />
+                          Assign {{ service.name }}</label
+                        >
+                      } @else {
+                        <span class="badge neutral">Assigned</span>
+                      }
+                    </div>
+                  }
+                }
+              </div>
+              @if (!project.serviceIds.length) {
+                <p class="empty-copy">No services assigned yet.</p>
+              }
+            </section>
+          } @else {
+            <section class="panel entries-panel">
+              <div class="panel-heading">
+                <div>
+                  <h2>Time entries</h2>
+                  <p>Recorded project time. Read-only for every demo viewer.</p>
+                </div>
+                <span class="badge neutral"
+                  >{{ project.entries.length }} entries</span
+                >
+              </div>
+              @if (project.entries.length) {
+                <div class="table-scroll">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th scope="col">Date</th>
+                        <th scope="col">Member</th>
+                        <th scope="col">Service / note</th>
+                        <th scope="col">Hours</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (entry of project.entries; track entry.id) {
+                        <tr>
+                          <td>{{ entry.date | date: 'mediumDate' : 'UTC' }}</td>
+                          <td>{{ personName(entry.memberId) }}</td>
+                          <td>
+                            <strong>{{ serviceName(entry.serviceId) }}</strong
+                            ><small>{{ entry.note }}</small>
+                          </td>
+                          <td>{{ entry.hours | number: '1.0-2' }} h</td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              } @else {
+                <div class="empty-state">
+                  <span aria-hidden="true">◷</span>
+                  <h3>No time recorded yet</h3>
+                  <p>
+                    Time entries will appear here when a real timesheet is
+                    connected.
+                  </p>
+                </div>
+              }
+            </section>
+          }
+          @if (manager()) {
+            <section class="lifecycle" aria-label="Project lifecycle">
+              <div>
+                <strong>{{
+                  project.archived ? 'Archived project' : 'Project lifecycle'
+                }}</strong>
+                <p>
+                  {{
+                    project.archived
+                      ? 'Restore to resume work, or permanently remove
+            this demo project.'
+                      : 'Archive to keep its history and remove it
+            from the timesheet picker.'
+                  }}
+                </p>
+              </div>
+              <button class="secondary" (click)="archive(project)">
+                {{ project.archived ? 'Restore project' : 'Archive project' }}
+              </button>
+              @if (project.archived) {
+                <button class="danger-button" (click)="deleteProject(project)">
+                  Delete permanently
+                </button>
+              }
+            </section>
+          }
+        } @else {
+          <section class="empty-state panel">
+            <span aria-hidden="true">◇</span>
+            <h1>Project unavailable</h1>
+            <p>
+              This project does not exist or is outside your demo viewer’s
+              assigned scope.
+            </p>
+            <a hlmBtn href="#/projects">Back to projects</a>
+          </section>
+        }
+      } @else {
+        <div class="page-heading">
+          <div>
+            <p class="eyebrow">A PLACE FOR EVERY POSSIBILITY</p>
+            <h1>Projects<span class="heading-dot">.</span></h1>
+            <p>
+              {{
+                manager()
+                  ? 'Keep your team aligned, from the first idea to the
+            final hour.'
+                  : 'Your assigned projects, people and progress.
+            Read-only access.'
+              }}
+            </p>
+          </div>
+          @if (manager()) {
+            <button hlmBtn type="button" (click)="openForm()">
+              <span class="plus" aria-hidden="true">+</span> New project
+            </button>
+          } @else {
+            <span class="badge neutral">Employee · read-only</span>
+          }
+        </div>
+        <div class="metric-grid">
+          <section class="metric">
+            <div class="metric-label">
+              Active projects<span class="metric-icon teal" aria-hidden="true"
+                >▦</span
+              >
+            </div>
+            <strong>{{ activeCount() }}<small> projects</small></strong
+            ><span>Moving work forward</span>
+          </section>
+          <section class="metric">
+            <div class="metric-label">
+              Hours this week<span class="metric-icon blue" aria-hidden="true"
+                >◷</span
+              >
+            </div>
+            <strong>{{ weekHours() | number: '1.0-2' }}<small> h</small></strong
+            ><span>Across your visible projects</span>
+          </section>
+          <section class="metric">
+            <div class="metric-label">
+              Budget watch<span class="metric-icon amber" aria-hidden="true"
+                >◴</span
+              >
+            </div>
+            <strong>{{ budgetCount() }}<small> projects</small></strong
+            ><span>At 80% of budget or above</span>
+          </section>
+        </div>
+        <section class="projects-panel" aria-labelledby="all-projects-heading">
+          <div class="table-heading">
+            <h2 id="all-projects-heading">
+              All projects <span>{{ projects().length }}</span>
+            </h2>
+            <span class="subtle">Your work, in one view</span>
+          </div>
+          <div class="filters">
+            <label class="search-label"
+              ><span aria-hidden="true">⌕</span
+              ><input
+                type="search"
+                aria-label="Search projects"
+                placeholder="Search name or code…"
+                [value]="filters().search"
+                (input)="updateFilter('search', $any($event.target).value)"
+            /></label>
+            <select
+              aria-label="Filter by client"
+              [value]="filters().clientId"
+              (change)="updateFilter('clientId', $any($event.target).value)"
+            >
+              <option value="">All clients</option>
+              @for (client of repository.clients; track client.id) {
+                <option [value]="client.id">{{ client.name }}</option>
+              }
+            </select>
+            <select
+              aria-label="Filter by status"
+              [value]="filters().status"
+              (change)="updateFilter('status', $any($event.target).value)"
+            >
+              <option value="current">Not archived</option>
+              <option value="all">All statuses</option>
+              <option value="active">Active</option>
+              <option value="on-hold">On hold</option>
+              <option value="completed">Completed</option>
+              <option value="archived">Archived</option>
+            </select>
+            <label class="mine-filter"
+              ><input
+                type="checkbox"
+                [checked]="filters().mine"
+                (change)="toggleMine($any($event.target).checked)"
+              />
+              My projects</label
+            >
+            <button class="text-button" (click)="clearFilters()">Reset</button>
+          </div>
+          <div class="table-scroll">
+            <table class="projects-table">
+              <thead>
+                <tr>
+                  <th scope="col">Project</th>
+                  <th scope="col">Client</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Members</th>
+                  <th scope="col">Budget progress</th>
+                  <th scope="col"><span class="sr-only">Open project</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (project of projects(); track project.id) {
+                  <tr>
+                    <td>
+                      <div class="project-cell">
+                        <span
+                          class="project-icon"
+                          [style.background]="project.color"
+                          >{{ project.code.slice(0, 2) }}</span
+                        >
+                        <div>
+                          <a
+                            class="project-name"
+                            [href]="'#/projects/' + project.id"
+                            >{{ project.name }}</a
+                          ><small
+                            >{{ project.code }}
+                            <span
+                              >·
+                              {{
+                                project.billable ? 'Billable' : 'Non-billable'
+                              }}</span
+                            ></small
+                          >
+                        </div>
+                      </div>
+                    </td>
+                    <td>{{ clientName(project.clientId) }}</td>
+                    <td>
+                      <span
+                        [class]="
+                          'badge ' +
+                          (project.archived ? 'neutral' : project.status)
+                        "
+                        ><i></i>{{ statusName(project) }}</span
+                      >
+                    </td>
+                    <td>
+                      <span class="member-count">{{
+                        project.memberIds.length
+                      }}</span>
+                      <span class="subtle">members</span>
+                    </td>
+                    <td class="budget-cell">
+                      @if (project.budget !== null) {
+                        <div>
+                          <span
+                            >{{ metrics(project).hours | number: '1.0-2' }}
+                            <span class="subtle"
+                              >/ {{ project.budget }} h</span
+                            ></span
+                          ><strong
+                            [class.over-budget]="
+                              (metrics(project).percent ?? 0) >= 80
+                            "
+                            >{{
+                              metrics(project).percent | number: '1.0-0'
+                            }}%</strong
+                          >
+                        </div>
+                        <progress
+                          [class.warning]="
+                            (metrics(project).percent ?? 0) >= 80
+                          "
+                          [value]="clamp(metrics(project).percent ?? 0)"
+                          max="100"
+                          [attr.aria-label]="project.name + ' budget used'"
+                        ></progress>
+                      } @else {
+                        <span class="subtle">No budget set</span>
+                      }
+                    </td>
+                    <td>
+                      <a
+                        class="row-arrow"
+                        [href]="'#/projects/' + project.id"
+                        [attr.aria-label]="'Open ' + project.name"
+                        >↗</a
+                      >
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          @if (!projects().length) {
+            <div class="empty-state">
+              <span aria-hidden="true">⌕</span>
+              <h3>No projects found</h3>
+              <p>Try another filter or ask a manager to assign a project.</p>
+              <button class="secondary" (click)="clearFilters()">
+                Reset filters
+              </button>
+            </div>
+          }
+          <footer class="table-footer">
+            <span
+              >Showing {{ projects().length }} of {{ scoped().length }} visible
+              projects</span
+            ><span><i class="legend-dot"></i> Made for focused work</span>
+          </footer>
+        </section>
+        <div class="bottom-note">
+          <span aria-hidden="true">◇</span>
+          <p>
+            {{
+              manager()
+                ? 'Good projects start with a clear plan.'
+                : 'Only your
+          assigned projects appear in this workspace.'
+            }}
+            <span>{{
+              manager()
+                ? 'Make space for your next one.'
+                : 'Demo permissions
+            are enforced in the frontend only.'
+            }}</span>
+          </p>
+        </div>
+      }
+    </main>
+    <footer class="page-footer">
+      <span
+        >workstream <span class="footer-divider">/</span> Bitovi workspace</span
+      ><span>Projects workspace · Frontend demo</span>
+    </footer>
+  </div>
+</div>
+@if (showForm() && manager()) {
+  <wsf-project-form
+    [project]="editing()"
+    [clients]="repository.clients"
+    [error]="formError()"
+    (saved)="saveProject($event)"
+    (dismissed)="showForm.set(false)"
+  />
+}

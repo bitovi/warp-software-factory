@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { StatusPage } from '@wsf/web/feature-status';
+import { ProjectsPage } from '@wsf/web/feature-projects';
 
 @Component({
   selector: 'wsf-root',
-  imports: [StatusPage],
-  template: '<wsf-status-page />',
+  imports: [ProjectsPage],
+  template: '<wsf-projects-page />',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class App {}

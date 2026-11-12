@@ -1,0 +1,14 @@
+{
+  "name": "web-feature-projects",
+  "projectType": "library",
+  "sourceRoot": "libs/web/feature-projects/src",
+  "tags": ["scope:web", "type:feature"],
+  "targets": {
+    "test": {
+      "command": "tsx --tsconfig tsconfig.base.json --test libs/web/feature-projects/src/lib/*.spec.ts"
+    },
+    "typecheck": {
+      "command": "ngc -p libs/web/feature-projects/tsconfig.lib.json --noEmit"
+    }
+  }
+}

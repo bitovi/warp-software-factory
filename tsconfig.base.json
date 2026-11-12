@@ -20,6 +20,10 @@
       "@wsf/shared/schemas": ["libs/shared/schemas/src/index.ts"],
       "@wsf/web/ui": ["libs/web/ui/src/index.ts"],
       "@wsf/web/feature-status": ["libs/web/feature-status/src/index.ts"],
+      "@wsf/web/feature-projects": ["libs/web/feature-projects/src/index.ts"],
+      "@wsf/web/data-access-projects": [
+        "libs/web/data-access-projects/src/index.ts"
+      ],
       "@wsf/web/data-access-status": [
         "libs/web/data-access-status/src/index.ts"
       ],
