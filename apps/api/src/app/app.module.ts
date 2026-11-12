@@ -2,18 +2,21 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER, APP_PIPE } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthModule } from '@wsf/api/feature-auth';
 import { StatusModule } from '@wsf/api/feature-status';
 import { TasksModule } from '@wsf/api/feature-tasks';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { ApiExceptionFilter } from '../common/api-exception.filter';
 import { Environment, validateEnvironment } from '../config/environment';
 import { databaseOptions } from '../database-options';
+import { TypeOrmSignupStore } from '../database/typeorm-signup.store';
 import { HealthController } from '../health/health.controller';
 
 @Module({
   imports: [
     StatusModule,
     TasksModule,
+    AuthModule.register(TypeOrmSignupStore),
     ConfigModule.forRoot({
       isGlobal: true,
       cache: true,

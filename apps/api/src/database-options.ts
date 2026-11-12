@@ -1,6 +1,10 @@
 import { join } from 'node:path';
 import { DataSourceOptions } from 'typeorm';
 import { Environment } from './config/environment';
+import { Company } from './database/entities/company.entity';
+import { EmailVerificationRequest } from './database/entities/email-verification-request.entity';
+import { Membership } from './database/entities/membership.entity';
+import { User } from './database/entities/user.entity';
 
 export function databaseOptions(
   env: Environment,
@@ -16,7 +20,7 @@ export function databaseOptions(
     synchronize: false,
     migrationsRun: false,
     migrationsTransactionMode: 'all',
-    entities: [join(__dirname, 'database', 'entities', '*.entity.{ts,js}')],
+    entities: [User, Company, Membership, EmailVerificationRequest],
     migrations: [join(__dirname, 'database', 'migrations', '*.{ts,js}')],
     connectTimeoutMS: 5000,
     extra: { statement_timeout: 5000 },

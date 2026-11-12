@@ -55,6 +55,28 @@ test('serves shared status and task contracts under the API prefix', async (t) =
     });
 
   await t.test(
+    'validates signup with field-level errors in the compiled API',
+    async () => {
+      const response = await send('/auth/signup', 'POST', {
+        email: 'owner@example.com',
+        password: 'weak-secret',
+        firstName: 'Ada',
+        lastName: 'Lovelace',
+        companyName: 'Analytical Engines',
+      });
+      assert.equal(response.status, 400);
+      const error = await response.json();
+      assert.deepEqual(error.fieldErrors.password, [
+        'Use at least 12 characters.',
+      ]);
+      assert.doesNotMatch(
+        JSON.stringify(error),
+        /weak-secret|passwordHash|argon2/,
+      );
+    },
+  );
+
+  await t.test(
     'returns structured field errors for invalid requests',
     async () => {
       const invalid = await send('/tasks', 'POST', {

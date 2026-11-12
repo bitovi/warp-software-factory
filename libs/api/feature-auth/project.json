@@ -1,0 +1,11 @@
+{
+  "name": "api-feature-auth",
+  "projectType": "library",
+  "sourceRoot": "libs/api/feature-auth/src",
+  "tags": ["scope:api", "type:feature"],
+  "targets": {
+    "typecheck": {
+      "command": "tsc -p libs/api/feature-auth/tsconfig.lib.json --noEmit"
+    }
+  }
+}

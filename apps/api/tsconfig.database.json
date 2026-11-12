@@ -4,5 +4,10 @@
     "rootDir": "src",
     "outDir": "../../dist/apps/api"
   },
-  "include": ["src/database-options.ts", "src/database/**/*.ts"]
+  "include": [
+    "src/database-options.ts",
+    "src/database/data-source.ts",
+    "src/database/entities/**/*.ts",
+    "src/database/migrations/**/*.ts"
+  ]
 }
