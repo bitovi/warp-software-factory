@@ -23,4 +23,7 @@ export class User extends BaseEntity {
 
   @Column({ type: 'varchar', length: 16, default: 'active' })
   status!: 'active' | 'disabled';
+
+  @Column({ type: 'uuid', nullable: true })
+  lastMembershipId!: string | null;
 }
